@@ -20,6 +20,7 @@ android {
 }
 
 dependencies {
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile group: project.KAKAO_SDK_GROUP, name: 'usermgmt', version: project.KAKAO_SDK_VERSION
     compile 'com.google.android.gms:play-services-maps:11.0.2'
     compile 'com.google.android.gms:play-services-location:11.0.2'
