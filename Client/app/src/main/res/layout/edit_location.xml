@@ -21,6 +21,7 @@
         class="com.google.android.gms.maps.MapFragment" />
 
     <Button
+        android:id="@+id/curr_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="set it as my current location"
@@ -29,6 +30,7 @@
         android:textColor="@android:color/white"/>
 
     <Button
+        android:id="@+id/submit_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="continue"

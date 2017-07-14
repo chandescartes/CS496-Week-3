@@ -1,5 +1,6 @@
 package com.example.q.cs496_week3;
 
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -28,27 +29,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     boolean doubleBack = false;
     String nickname;
+    double lat;
+    double lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(this.getPackageName(), PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("key hash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        */
-
         nickname = getIntent().getStringExtra("nickname");
+        lat = getIntent().getDoubleExtra("lat", 0.00);
+        lng = getIntent().getDoubleExtra("lng", 0.00);
         Log.d("NICKNAME", nickname);
+        Log.d("LAT", String.valueOf(lat));
+        Log.d("LNG", String.valueOf(lng));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

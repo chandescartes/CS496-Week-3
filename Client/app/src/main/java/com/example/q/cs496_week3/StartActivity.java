@@ -58,7 +58,7 @@ public class StartActivity extends AppCompatActivity {
                 return;
             }
 
-            Intent intent = new Intent(StartActivity.this, MainActivity.class);
+            Intent intent = new Intent(StartActivity.this, EditLocation.class);
             intent.putExtra("nickname", nickname);
             startActivity(intent);
         }
