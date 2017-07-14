@@ -131,7 +131,7 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
         map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {
-                Log.d("Drag_STARTED", "------------------------");
+                Log.d("Drag_STARTED", "--DRAGGING--");
             }
 
             @Override
