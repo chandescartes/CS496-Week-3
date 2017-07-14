@@ -35,7 +35,6 @@ import io.socket.emitter.Emitter;
 public class RoomFragment extends Fragment {
 
     String nickname = MainActivity.nickname;
-    private static final String TAG = "RoomFragment";
 
     private EditText InputEditText;
     private RecyclerView mMessagesView;
@@ -69,8 +68,8 @@ public class RoomFragment extends Fragment {
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("new-message", onNewMessage);
-//        mSocket.on("user joined", onUserJoined);
-//        mSocket.on("user left", onUserLeft);
+        mSocket.on("user joined", onUserJoined);
+        mSocket.on("user left", onUserLeft);
         mSocket.on("new-room", new Emitter.Listener() {
             @Override
             public void call(final Object... args) {
@@ -135,6 +134,21 @@ public class RoomFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mSocket.disconnect();
+
+        mSocket.off(Socket.EVENT_CONNECT, onConnect);
+        mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
+        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.off("new message", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
+    }
+
     private void attemptSend() {
         if (!mSocket.connected()) return;
 
@@ -169,6 +183,17 @@ public class RoomFragment extends Fragment {
         scrollToBottom();
     }
 
+    private void addLog(String message) {
+        mMessages.add(new Message.Builder(Message.TYPE_LOG)
+                .message(message).build());
+        mAdapter.notifyItemInserted(mMessages.size() - 1);
+        scrollToBottom();
+    }
+
+    private void addParticipantsLog(int numUsers) {
+        addLog(getResources().getQuantityString(R.plurals.message_participants, numUsers, numUsers));
+    }
+
     private void scrollToBottom() {
         mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
     }
@@ -199,10 +224,10 @@ public class RoomFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "diconnected");
+                    Log.d("onDisconnect", "diconnected");
                     isConnected = false;
-                    Toast.makeText(getActivity().getApplicationContext(),
-                            R.string.disconnect, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.disconnect, Toast.LENGTH_LONG).show();
+                    return;
                 }
             });
         }
@@ -216,9 +241,14 @@ public class RoomFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "Error connecting");
-                    Toast.makeText(getActivity().getApplicationContext(),
-                            R.string.error_connect, Toast.LENGTH_LONG).show();
+                    if (isConnected) {
+                        Toast.makeText(getActivity().getApplicationContext(),
+                                R.string.error_connect, Toast.LENGTH_LONG).show();
+                        isConnected = false;
+                    }
+
+                    Log.d("onConnectError", "Error connecting");
+
                 }
             });
         }
@@ -238,12 +268,59 @@ public class RoomFragment extends Fragment {
                         username = data.getString("nickname");
                         message = data.getString("message");
                     } catch (JSONException e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e("onNewMessage", e.getMessage());
                         return;
                     }
 
-//                    removeTyping(username);
                     addMessage(username, message);
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onUserJoined = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    int numUsers;
+                    try {
+                        username = data.getString("username");
+                        numUsers = data.getInt("numUsers");
+                    } catch (JSONException e) {
+                        Log.e("onUserJoined", e.getMessage());
+                        return;
+                    }
+
+                    addLog(getResources().getString(R.string.message_user_joined, username));
+                    addParticipantsLog(numUsers);
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onUserLeft = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    int numUsers;
+                    try {
+                        username = data.getString("username");
+                        numUsers = data.getInt("numUsers");
+                    } catch (JSONException e) {
+                        Log.e("onUserLeft", e.getMessage());
+                        return;
+                    }
+
+                    addLog(getResources().getString(R.string.message_user_left, username));
+                    addParticipantsLog(numUsers);
                 }
             });
         }
