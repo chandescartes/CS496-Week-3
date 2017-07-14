@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
     private List<Message> mMessages;

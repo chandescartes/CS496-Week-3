@@ -20,7 +20,6 @@
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/spacing"
         android:paddingRight="@dimen/spacing"
-        android:textColor="?android:textColorPrimary"
-        android:maxLines="1" />
+        android:textColor="?android:textColorPrimary" />
 
 </LinearLayout>

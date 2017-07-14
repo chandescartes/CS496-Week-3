@@ -42,6 +42,7 @@
         app:layout_constraintTop_toBottomOf="@+id/titleTextView"
         android:textAlignment="center"
         android:textColor="@color/white"
+        android:imeActionId="0x00000006"
         android:maxLength="20"/>
 
     <Button

@@ -2,7 +2,10 @@ package com.example.q.cs496_week3;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -62,14 +65,12 @@ public class RoomFragment extends Fragment {
         mSocket = app.getSocket();
 
         mSocket.on(Socket.EVENT_CONNECT, onConnect);
-//        mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
-//        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-//        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+        mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
+        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         mSocket.on("new-message", onNewMessage);
 //        mSocket.on("user joined", onUserJoined);
 //        mSocket.on("user left", onUserLeft);
-//        mSocket.on("typing", onTyping);
-//        mSocket.on("stop typing", onStopTyping);
         mSocket.on("new-room", new Emitter.Listener() {
             @Override
             public void call(final Object... args) {
@@ -150,8 +151,16 @@ public class RoomFragment extends Fragment {
 
 //        addMessage("TEST USER", message);
 
+        JSONObject data = new JSONObject();
+        try {
+            data.put("nickname", nickname);
+            data.put("message", message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         // perform the sending message attempt.
-        mSocket.emit("new-message", message);
+        mSocket.emit("new-message", data);
     }
 
     private void addMessage(String username, String message) {
@@ -167,9 +176,7 @@ public class RoomFragment extends Fragment {
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            if (getActivity() == null) {
-                return;
-            }
+            if (getActivity() == null) return;
 
             getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -184,12 +191,43 @@ public class RoomFragment extends Fragment {
         }
     };
 
+    private Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            if (getActivity() == null) return;
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "diconnected");
+                    isConnected = false;
+                    Toast.makeText(getActivity().getApplicationContext(),
+                            R.string.disconnect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onConnectError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            if (getActivity() == null) return;
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "Error connecting");
+                    Toast.makeText(getActivity().getApplicationContext(),
+                            R.string.error_connect, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
+
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            if (getActivity() == null) {
-                return;
-            }
+            if (getActivity() == null) return;
 
             getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -197,7 +235,7 @@ public class RoomFragment extends Fragment {
                     JSONObject data = (JSONObject) args[0];
                     String username, message;
                     try {
-                        username = data.getString("username");
+                        username = data.getString("nickname");
                         message = data.getString("message");
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage());
