@@ -16,4 +16,12 @@
         <item>@color/username11</item>
     </array>
 
+    <string-array name="category">
+        <item>[Category]</item>
+        <item>치킨</item>
+        <item>피자</item>
+        <item>족발</item>
+        <item>보쌈</item>
+    </string-array>
+
 </resources>

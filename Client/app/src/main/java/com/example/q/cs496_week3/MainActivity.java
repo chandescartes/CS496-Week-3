@@ -21,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.security.MessageDigest;
@@ -30,25 +31,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     boolean doubleBack = false;
     public static String nickname;
+    double lat;
+    double lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(this.getPackageName(), PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("key hash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
         nickname = getIntent().getStringExtra("nickname");
+        lat = getIntent().getDoubleExtra("lat", 0.00);
+        lng = getIntent().getDoubleExtra("lng", 0.00);
         Log.d("NICKNAME", nickname);
+        Log.d("LAT", String.valueOf(lat));
+        Log.d("LNG", String.valueOf(lng));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -108,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        TextView nicknameText = (TextView) findViewById(R.id.nicknameHeader);
+        nicknameText.setText(nickname);
         return true;
     }
 
@@ -132,17 +130,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.make_room) {
 
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.join_room) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.quick_match) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.my_profile) {
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.my_location) {
 
         }
 
