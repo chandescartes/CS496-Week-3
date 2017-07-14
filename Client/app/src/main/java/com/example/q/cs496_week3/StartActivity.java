@@ -50,11 +50,9 @@ public class StartActivity extends AppCompatActivity {
     View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            Log.d("invalid", "asdf");
             String nickname = nicknameEditText.getText().toString().trim();
             if (TextUtils.isEmpty(nickname)) {
                 Toast.makeText(getApplicationContext(), "Please enter a valid nickname", Toast.LENGTH_SHORT).show();
-                Log.d("invalid", "nickname");
                 return;
             }
 
