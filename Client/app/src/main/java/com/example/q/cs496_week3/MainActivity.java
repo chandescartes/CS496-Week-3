@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("NICKNAME", nickname);
         Log.d("LAT", String.valueOf(lat));
         Log.d("LNG", String.valueOf(lng));
+        Log.d("COMPLETE!!","abcd");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

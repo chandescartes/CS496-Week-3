@@ -27,6 +27,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 /**
@@ -34,6 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  */
 
 public class EditLocation extends AppCompatActivity implements OnMapReadyCallback {
+    Marker selected_location;
     MarkerOptions markerOptions = new MarkerOptions();
     Location myLocation;
     double myLat;
@@ -74,14 +76,8 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
@@ -104,8 +100,8 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
         submitBtn.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View mview) {
-                double lat = markerOptions.getPosition().latitude;
-                double lng = markerOptions.getPosition().longitude;
+                double lat = selected_location.getPosition().latitude;
+                double lng = selected_location.getPosition().longitude;
                 Intent intent = new Intent(EditLocation.this, MainActivity.class);
                 intent.putExtra("nickname", nickname);
                 intent.putExtra("lat", lat);
@@ -129,23 +125,25 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
 
         markerOptions.position(default_latlng);
         markerOptions.title("선택된 장소");
-        markerOptions.draggable(true);
 
-//        if (ActivityCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                && ActivityCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            return;
-//        }
-//        map.setMyLocationEnabled(true);
-        map.addMarker(markerOptions);
+        selected_location = map.addMarker(markerOptions);
+        selected_location.setDraggable(true);
+        map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+                Log.d("Drag_STARTED", "------------------------");
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                Log.d("Drag_ENDED", String.valueOf(marker.getPosition().latitude));
+            }
+        });
         map.animateCamera(cameraUpdate);
     }
 }
