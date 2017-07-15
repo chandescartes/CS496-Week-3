@@ -37,7 +37,8 @@
             android:name=".EditLocation">
         </activity>
 
-        <activity android:name=".RoomActivity">asdf</activity>
+        <activity android:name=".RoomActivity">
+        </activity>
 
     </application>
 

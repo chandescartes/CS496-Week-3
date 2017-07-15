@@ -38,11 +38,14 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import io.socket.client.Socket;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static String nickname;
     double lat;
     double lng;
+    private Socket mSocket;
 
     ArrayList<Room> items;
     ArrayList<Room> RoomArrList = new ArrayList<>();
@@ -79,6 +83,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         lat = UserInfo.getLatv();
         lng = UserInfo.getLngv();
 
+        ChatApplication app = (ChatApplication) this.getApplication();
+        mSocket = app.getSocket();
+        mSocket.connect();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         final Context context = this;
@@ -101,11 +109,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // remove later
         Button button = (Button) findViewById(R.id.btn);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                JSONObject data = new JSONObject();
+                try {
+                    data.put("nickname", nickname);
+                    data.put("room", "room1");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+                mSocket.emit("user-joined", data);
                 Intent intent = new Intent(MainActivity.this, RoomActivity.class);
+                intent.putExtra("room", "room1");
                 startActivity(intent);
             }
         });

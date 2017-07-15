@@ -2,10 +2,7 @@ package com.example.q.cs496_week3;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -34,17 +31,18 @@ import io.socket.emitter.Emitter;
 
 public class RoomFragment extends Fragment {
 
-    String nickname = MainActivity.nickname;
+    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left";
 
-    private EditText InputEditText;
+    String NICKNAME = MainActivity.nickname;
+    String ROOM = RoomActivity.ROOM;
+
+    private Boolean isConnected = true;
+
     private RecyclerView mMessagesView;
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
     private RecyclerView.Adapter mAdapter;
-    private boolean mTyping = false;
     private Socket mSocket;
-
-    private Boolean isConnected = true;
 
     public RoomFragment() {
         super();
@@ -62,22 +60,14 @@ public class RoomFragment extends Fragment {
 
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         mSocket = app.getSocket();
-
         mSocket.on(Socket.EVENT_CONNECT, onConnect);
         mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.on("new-message", onNewMessage);
-        mSocket.on("user joined", onUserJoined);
-        mSocket.on("user left", onUserLeft);
-        mSocket.on("new-room", new Emitter.Listener() {
-            @Override
-            public void call(final Object... args) {
-                Log.d("new room", (String) args[0]);
-            }
-        });
+        mSocket.on(S_NEW_MESSAGE, onNewMessage);
+        mSocket.on(S_USER_JOINED, onUserJoined);
+        mSocket.on(S_USER_LEFT, onUserLeft);
         mSocket.connect();
-        mSocket.emit("new-room", "room1");
     }
 
     @Override
@@ -105,26 +95,6 @@ public class RoomFragment extends Fragment {
             }
         });
 
-        mInputMessageView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!mSocket.connected()) return;
-
-                if (!mTyping) {
-                    mTyping = true;
-                    mSocket.emit("Typing...");
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-
         ImageButton sendButton = (ImageButton) view.findViewById(R.id.send_button);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,20 +109,17 @@ public class RoomFragment extends Fragment {
         super.onDestroy();
 
         mSocket.disconnect();
-
         mSocket.off(Socket.EVENT_CONNECT, onConnect);
         mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
         mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off("new message", onNewMessage);
-        mSocket.off("user joined", onUserJoined);
-        mSocket.off("user left", onUserLeft);
+        mSocket.off(S_NEW_MESSAGE, onNewMessage);
+        mSocket.off(S_USER_JOINED, onUserJoined);
+        mSocket.off(S_USER_LEFT, onUserLeft);
     }
 
     private void attemptSend() {
         if (!mSocket.connected()) return;
-
-        mTyping = false;
 
         String message = mInputMessageView.getText().toString().trim();
 
@@ -163,17 +130,7 @@ public class RoomFragment extends Fragment {
             return;
         }
 
-//        addMessage("TEST USER", message);
-
-        JSONObject data = new JSONObject();
-        try {
-            data.put("nickname", nickname);
-            data.put("message", message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        // perform the sending message attempt.
+        JSONObject data = createData(new String[]{"message"}, new String[]{message});
         mSocket.emit("new-message", data);
     }
 
@@ -196,6 +153,27 @@ public class RoomFragment extends Fragment {
 
     private void scrollToBottom() {
         mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
+    }
+
+    private JSONObject createData(String[] keys, String[] values) {
+        JSONObject data = new JSONObject();
+
+        if (keys.length != values.length) {
+            Log.d("createData", "ERROR: KEYS DO NOT MATCH VALUES");
+            return data;
+        }
+
+        try {
+            data.put("room", ROOM);
+            data.put("nickname", NICKNAME);
+            for (int i = 0; i < keys.length; i++) {
+                data.put(keys[i], values[i]);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return data;
     }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
@@ -224,8 +202,8 @@ public class RoomFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d("onDisconnect", "diconnected");
                     isConnected = false;
+                    Log.d("onDisconnect", "disconnected");
                     Toast.makeText(getActivity().getApplicationContext(), R.string.disconnect, Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -242,8 +220,7 @@ public class RoomFragment extends Fragment {
                 @Override
                 public void run() {
                     if (isConnected) {
-                        Toast.makeText(getActivity().getApplicationContext(),
-                                R.string.error_connect, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity().getApplicationContext(), R.string.error_connect, Toast.LENGTH_LONG).show();
                         isConnected = false;
                     }
 
@@ -285,17 +262,17 @@ public class RoomFragment extends Fragment {
                 @Override
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
-                    String username;
+                    String nickname;
                     int numUsers;
                     try {
-                        username = data.getString("username");
+                        nickname = data.getString("nickname");
                         numUsers = data.getInt("numUsers");
                     } catch (JSONException e) {
                         Log.e("onUserJoined", e.getMessage());
                         return;
                     }
 
-                    addLog(getResources().getString(R.string.message_user_joined, username));
+                    addLog(getResources().getString(R.string.message_user_joined, nickname));
                     addParticipantsLog(numUsers);
                 }
             });
