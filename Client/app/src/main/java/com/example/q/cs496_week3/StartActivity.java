@@ -2,6 +2,7 @@ package com.example.q.cs496_week3;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,22 +12,47 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class StartActivity extends AppCompatActivity {
 
     boolean doubleBack = false;
 
     EditText nicknameEditText;
     Button startButton;
+    String deviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+        deviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        UserInfo.setIdStr(deviceId);
 
-        nicknameEditText = (EditText) findViewById(R.id.nicknameEditText);
-        startButton = (Button) findViewById(R.id.startButton);
+        HttpCall.setMethodtext("GET");
+        HttpCall.setUrltext("/api/user");
+        String all_users = HttpCall.getResponse();
 
-        startButton.setOnClickListener(clickListener);
+        if (all_users.contains("\"id\":\""+deviceId+"\"")) {
+            HttpCall.setMethodtext("GET");
+            HttpCall.setUrltext("/api/user/"+deviceId);
+            try {
+                JSONObject curr_user = new JSONObject(HttpCall.getResponse());
+                UserInfo.setNickname(curr_user.getString("nickname"));
+                UserInfo.setLatv(Double.parseDouble(curr_user.getString("lat")));
+                UserInfo.setLngv(Double.parseDouble(curr_user.getString("lng")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Intent intent = new Intent(StartActivity.this, MainActivity.class);
+            startActivity(intent);
+        } else {
+            nicknameEditText = (EditText) findViewById(R.id.nicknameEditText);
+            startButton = (Button) findViewById(R.id.startButton);
+
+            startButton.setOnClickListener(clickListener);
+        }
     }
 
     @Override
@@ -56,8 +82,19 @@ public class StartActivity extends AppCompatActivity {
                 return;
             }
 
+            HttpCall.setMethodtext("POST");
+            HttpCall.setUrltext("/api/adduser");
+            HttpCall.setBodytext("{\"id\":\""+deviceId+"\"}");
+            HttpCall.getResponse();
+
+            HttpCall.setMethodtext("userPUT");
+            HttpCall.setUrltext("/api/user/"+deviceId+"/nickname");
+            HttpCall.setNicknametext(nickname);
+            HttpCall.getResponse();
+
+            UserInfo.setNickname(nickname);
+
             Intent intent = new Intent(StartActivity.this, EditLocation.class);
-            intent.putExtra("nickname", nickname);
             startActivity(intent);
         }
     };

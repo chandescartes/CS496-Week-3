@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ListViewAutoScrollHelper;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -35,6 +36,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -43,6 +47,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     CustomAdapter adapter;
+    SwipeRefreshLayout mSwipeRefreshLayout;
 
     boolean doubleBack = false;
     public static String nickname;
@@ -56,10 +61,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public class Room {
         String id;
         String title;
-        String Food;
-        double Distance;
+        String created_at;
+        String founder;
+        String food;
+        double lat;
+        double lng;
         int max_member;
-        int current_member;
+        ArrayList<String> member;
     }
 
     @Override
@@ -67,22 +75,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        nickname = getIntent().getStringExtra("nickname");
-        lat = getIntent().getDoubleExtra("lat", 0.00);
-        lng = getIntent().getDoubleExtra("lng", 0.00);
-        Log.d("NICKNAME", nickname);
-        Log.d("LAT", String.valueOf(lat));
-        Log.d("LNG", String.valueOf(lng));
+        nickname = UserInfo.getNickname();
+        lat = UserInfo.getLatv();
+        lng = UserInfo.getLngv();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        final Context context = this;
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                CustomDialog mCustomDialog = new CustomDialog(context);
+                mCustomDialog.show();
             }
         });
 
@@ -104,14 +110,96 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                RoomArrList = new ArrayList<Room>();
+                // listview
+                ListView listview = (ListView) findViewById(R.id.roomListView);
+                // sample test
+
+                HttpCall.setMethodtext("GET");
+                HttpCall.setUrltext("/api/room");
+                JSONArray roomlist = new JSONArray();
+                try {
+                    roomlist = new JSONArray(HttpCall.getResponse());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                for (int i=0;i<roomlist.length();i++) {
+                    Room a = new Room();
+                    try {
+                        a.id = roomlist.getJSONObject(i).getString("id");
+                        a.title = roomlist.getJSONObject(i).getString("title");
+                        a.food = roomlist.getJSONObject(i).getString("food");
+                        a.created_at = roomlist.getJSONObject(i).getString("created_at");
+                        a.founder = roomlist.getJSONObject(i).getString("founder");
+                        a.lat = roomlist.getJSONObject(i).getDouble("lat");
+                        a.lng = roomlist.getJSONObject(i).getDouble("lng");
+                        a.max_member = roomlist.getJSONObject(i).getInt("max_num");
+                        Log.d("maxmemberis",String.valueOf(a.max_member));
+                        a.member = new ArrayList<>();
+                        for (int j=0;j<roomlist.getJSONObject(i).getJSONArray("members").length();j++) {
+                            a.member.add(roomlist.getJSONObject(i).getJSONArray("members").getString(j));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    RoomArrList.add(a);
+                }
+
+                adapter = new CustomAdapter(context, R.layout.room_row, RoomArrList);
+                adapter.filter("");
+                if (listview != null)
+                    listview.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+        mSwipeRefreshLayout.setColorSchemeResources(
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light
+        );
+
         // listview
         ListView listview = (ListView) findViewById(R.id.roomListView);
         // sample test
-        for (int i=0;i<15;i++) {
+
+        HttpCall.setMethodtext("GET");
+        HttpCall.setUrltext("/api/room");
+        JSONArray roomlist = new JSONArray();
+        try {
+            roomlist = new JSONArray(HttpCall.getResponse());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        for (int i=0;i<roomlist.length();i++) {
             Room a = new Room();
-            a.current_member = 3;
+            try {
+                a.id = roomlist.getJSONObject(i).getString("id");
+                a.title = roomlist.getJSONObject(i).getString("title");
+                a.food = roomlist.getJSONObject(i).getString("food");
+                a.created_at = roomlist.getJSONObject(i).getString("created_at");
+                a.founder = roomlist.getJSONObject(i).getString("founder");
+                a.lat = roomlist.getJSONObject(i).getDouble("lat");
+                a.lng = roomlist.getJSONObject(i).getDouble("lng");
+                a.max_member = roomlist.getJSONObject(i).getInt("max_num");
+                Log.d("maxmemberis",String.valueOf(a.max_member));
+                a.member = new ArrayList<>();
+                for (int j=0;j<roomlist.getJSONObject(i).getJSONArray("members").length();j++) {
+                    a.member.add(roomlist.getJSONObject(i).getJSONArray("members").getString(j));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             RoomArrList.add(a);
         }
+
         adapter = new CustomAdapter(this, R.layout.room_row, RoomArrList);
         adapter.filter("");
         if (listview != null)
@@ -163,6 +251,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 v = vi.inflate(R.layout.room_row, null);
             }
+
+            TextView titleview = (TextView) v.findViewById(R.id.list_title);
+            TextView foodview = (TextView) v.findViewById(R.id.list_food);
+            TextView distanceview = (TextView) v.findViewById(R.id.list_distance);
+            TextView numberview = (TextView) v.findViewById(R.id.list_number);
+
+            titleview.setText(displayitems.get(position).title);
+            foodview.setText(displayitems.get(position).food);
+            Log.d("lat1",String.valueOf(displayitems.get(position).lat));
+            Log.d("lng1",String.valueOf(displayitems.get(position).lng));
+            Log.d("lat2",String.valueOf(UserInfo.getLatv()));
+            Log.d("lng2",String.valueOf(UserInfo.getLngv()));
+            double distance = getDistanceFromLatLonInm(displayitems.get(position).lat,
+                    displayitems.get(position).lng,
+                    UserInfo.getLatv(), UserInfo.getLngv());
+            distanceview.setText(String.valueOf(Math.round(distance))+"m");
+            String numbers = String.valueOf(displayitems.get(position).member.size())+" / "
+                    +String.valueOf(displayitems.get(position).max_member);
+            numberview.setText(numbers);
+
             return v;
         }
     }
@@ -235,5 +343,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    double getDistanceFromLatLonInm(double lat1,double lon1,double lat2,double lon2) {
+        double R = 6371; // Radius of the earth in km
+        double dLat = deg2rad(lat2-lat1);  // deg2rad below
+        double dLon = deg2rad(lon2-lon1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+                * Math.sin(dLon/2) * Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double d = R * c; // Distance in km
+        Log.d("distanceis", String.valueOf(d));
+        return d*1000;
+    }
+
+    double deg2rad(double deg) {
+        return deg * (Math.PI/180);
     }
 }

@@ -102,10 +102,17 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(View mview) {
                 double lat = selected_location.getPosition().latitude;
                 double lng = selected_location.getPosition().longitude;
+
+                HttpCall.setMethodtext("userPUT");
+                HttpCall.setUrltext("/api/user/"+UserInfo.getIdStr()+"/location");
+                HttpCall.setLatvalue(lat);
+                HttpCall.setLngvalue(lng);
+                HttpCall.getResponse();
+
+                UserInfo.setLatv(lat);
+                UserInfo.setLngv(lng);
+
                 Intent intent = new Intent(EditLocation.this, MainActivity.class);
-                intent.putExtra("nickname", nickname);
-                intent.putExtra("lat", lat);
-                intent.putExtra("lng", lng);
                 startActivity(intent);
             }
         });
