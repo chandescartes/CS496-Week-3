@@ -33,7 +33,7 @@ public class RoomFragment extends Fragment {
 
     final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left", S_DISCONNECT = "user-disconnected";
 
-    String NICKNAME = MainActivity.nickname;
+    String NICKNAME = UserInfo.getNickname();
     String ROOM = RoomActivity.ROOM;
 
     private Boolean isConnected = true;

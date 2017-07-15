@@ -225,7 +225,6 @@ public class HttpCall extends Activity {
         public void run() {
             try {
                 response = userputexample.userput("http://52.79.200.191:4000" + urltext, nickname, String.valueOf(lat), String.valueOf(lng));
-                Log.d("NICKNAME2:", nickname);
             } catch (IOException e) {
                 e.printStackTrace();
             }
