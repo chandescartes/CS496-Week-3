@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     double lat;
     double lng;
     private Socket mSocket;
+    Context context;
 
     ArrayList<Room> items;
     ArrayList<Room> RoomArrList = new ArrayList<>();
@@ -89,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        final Context context = this;
+        context = this;
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -134,47 +135,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                RoomArrList = new ArrayList<Room>();
-                // listview
-                ListView listview = (ListView) findViewById(R.id.roomListView);
-                // sample test
-
-                HttpCall.setMethodtext("GET");
-                HttpCall.setUrltext("/api/room");
-                JSONArray roomlist = new JSONArray();
-                try {
-                    roomlist = new JSONArray(HttpCall.getResponse());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                for (int i=0;i<roomlist.length();i++) {
-                    Room a = new Room();
-                    try {
-                        a.id = roomlist.getJSONObject(i).getString("id");
-                        a.title = roomlist.getJSONObject(i).getString("title");
-                        a.food = roomlist.getJSONObject(i).getString("food");
-                        a.created_at = roomlist.getJSONObject(i).getString("created_at");
-                        a.founder = roomlist.getJSONObject(i).getString("founder");
-                        a.lat = roomlist.getJSONObject(i).getDouble("lat");
-                        a.lng = roomlist.getJSONObject(i).getDouble("lng");
-                        a.max_member = roomlist.getJSONObject(i).getInt("max_num");
-                        Log.d("maxmemberis",String.valueOf(a.max_member));
-                        a.member = new ArrayList<>();
-                        for (int j=0;j<roomlist.getJSONObject(i).getJSONArray("members").length();j++) {
-                            a.member.add(roomlist.getJSONObject(i).getJSONArray("members").getString(j));
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    RoomArrList.add(a);
-                }
-
-                adapter = new CustomAdapter(context, R.layout.room_row, RoomArrList);
-                adapter.filter("");
-                if (listview != null)
-                    listview.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
+                Refresh();
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
@@ -185,46 +146,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 android.R.color.holo_red_light
         );
 
-        // listview
-        ListView listview = (ListView) findViewById(R.id.roomListView);
-        // sample test
-
-        HttpCall.setMethodtext("GET");
-        HttpCall.setUrltext("/api/room");
-        JSONArray roomlist = new JSONArray();
-        try {
-            roomlist = new JSONArray(HttpCall.getResponse());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        for (int i=0;i<roomlist.length();i++) {
-            Room a = new Room();
-            try {
-                a.id = roomlist.getJSONObject(i).getString("id");
-                a.title = roomlist.getJSONObject(i).getString("title");
-                a.food = roomlist.getJSONObject(i).getString("food");
-                a.created_at = roomlist.getJSONObject(i).getString("created_at");
-                a.founder = roomlist.getJSONObject(i).getString("founder");
-                a.lat = roomlist.getJSONObject(i).getDouble("lat");
-                a.lng = roomlist.getJSONObject(i).getDouble("lng");
-                a.max_member = roomlist.getJSONObject(i).getInt("max_num");
-                Log.d("maxmemberis",String.valueOf(a.max_member));
-                a.member = new ArrayList<>();
-                for (int j=0;j<roomlist.getJSONObject(i).getJSONArray("members").length();j++) {
-                    a.member.add(roomlist.getJSONObject(i).getJSONArray("members").getString(j));
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            RoomArrList.add(a);
-        }
-
-        adapter = new CustomAdapter(this, R.layout.room_row, RoomArrList);
-        adapter.filter("");
-        if (listview != null)
-            listview.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        Refresh();
     }
 
     private class CustomAdapter extends ArrayAdapter<Room> {
@@ -355,14 +277,60 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.quick_match) {
 
         } else if (id == R.id.my_profile) {
-
+            Intent intent = new Intent(MainActivity.this, EditNickname.class);
+            startActivity(intent);
         } else if (id == R.id.my_location) {
-
+            Intent intent = new Intent(MainActivity.this, EditLocation.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void Refresh() {
+        RoomArrList = new ArrayList<Room>();
+        // listview
+        ListView listview = (ListView) findViewById(R.id.roomListView);
+        // sample test
+
+        HttpCall.setMethodtext("GET");
+        HttpCall.setUrltext("/api/room");
+        JSONArray roomlist = new JSONArray();
+        try {
+            roomlist = new JSONArray(HttpCall.getResponse());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        for (int i=0;i<roomlist.length();i++) {
+            Room a = new Room();
+            try {
+                a.id = roomlist.getJSONObject(i).getString("id");
+                a.title = roomlist.getJSONObject(i).getString("title");
+                a.food = roomlist.getJSONObject(i).getString("food");
+                a.created_at = roomlist.getJSONObject(i).getString("created_at");
+                a.founder = roomlist.getJSONObject(i).getString("founder");
+                a.lat = roomlist.getJSONObject(i).getDouble("lat");
+                a.lng = roomlist.getJSONObject(i).getDouble("lng");
+                a.max_member = roomlist.getJSONObject(i).getInt("max_num");
+                Log.d("maxmemberis",String.valueOf(a.max_member));
+                a.member = new ArrayList<>();
+                for (int j=0;j<roomlist.getJSONObject(i).getJSONArray("members").length();j++) {
+                    a.member.add(roomlist.getJSONObject(i).getJSONArray("members").getString(j));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            RoomArrList.add(a);
+        }
+
+        adapter = new CustomAdapter(context, R.layout.room_row, RoomArrList);
+        adapter.filter("");
+        if (listview != null)
+            listview.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     double getDistanceFromLatLonInm(double lat1,double lon1,double lat2,double lon2) {
