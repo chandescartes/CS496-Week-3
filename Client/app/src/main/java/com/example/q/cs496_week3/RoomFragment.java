@@ -31,7 +31,7 @@ import io.socket.emitter.Emitter;
 
 public class RoomFragment extends Fragment {
 
-    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left";
+    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left", S_DISCONNECT = "user-disconnected";
 
     String NICKNAME = MainActivity.nickname;
     String ROOM = RoomActivity.ROOM;
@@ -107,6 +107,9 @@ public class RoomFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        JSONObject data = createData(new String[]{}, new String[]{});
+        mSocket.emit(S_DISCONNECT, data);
 
         mSocket.disconnect();
         mSocket.off(Socket.EVENT_CONNECT, onConnect);
