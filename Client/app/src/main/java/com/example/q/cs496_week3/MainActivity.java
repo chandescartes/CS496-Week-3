@@ -1,5 +1,7 @@
 package com.example.q.cs496_week3;
 
+import android.Manifest;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -8,10 +10,13 @@ import android.content.pm.Signature;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
@@ -35,6 +40,15 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        askForPermissions();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -246,6 +261,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getMenuInflater().inflate(R.menu.main, menu);
         TextView nicknameText = (TextView) findViewById(R.id.nicknameHeader);
         nicknameText.setText(nickname);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        MapFragment mapFragment = (MapFragment) fragmentManager
+                .findFragmentById(R.id.usermap);
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                LatLng currloc = new LatLng(lat, lng);
+
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currloc, 15);
+
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(currloc);
+                markerOptions.title("현재 위치");
+                googleMap.addMarker(markerOptions);
+                googleMap.animateCamera(cameraUpdate);
+            }
+        });
+
         return true;
     }
 
@@ -347,5 +381,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     double deg2rad(double deg) {
         return deg * (Math.PI/180);
+    }
+
+    public void askForPermissions() {
+        Log.d("permissioncheck", "AAAA");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1
+                );
+            }
+        }
     }
 }

@@ -90,6 +90,7 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
         currBtn.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View mview) {
+                selected_location.remove();
                 FragmentManager fragmentManager = getFragmentManager();
                 MapFragment mapFragment = (MapFragment) fragmentManager
                         .findFragmentById(R.id.map);
