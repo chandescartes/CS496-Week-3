@@ -1,7 +1,9 @@
 package com.example.q.cs496_week3;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.icu.util.Calendar;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,15 +24,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Created by kjy on 2016-04-11.
- */
+import io.socket.client.Socket;
+
 public class CustomDialog extends Dialog {
 
-    public CustomDialog(Context context) {
-        super(context);
+    public final String S_CREATE_ROOM = "create-room";
+    Activity mActivity;
+
+    public CustomDialog(Activity activity) {
+        super(activity);
+        mActivity = activity;
     }
 
+    static Socket mSocket = MainActivity.mSocket;
     EditText title;
     Spinner food;
     ImageButton submit;
@@ -61,31 +67,46 @@ public class CustomDialog extends Dialog {
 
                 String roomTitle = title.getText().toString().trim();
                 String roomFounder = UserInfo.getIdStr();
-                String roomId = roomFounder+created_at;
+                String roomId = roomFounder + created_at;
                 String roomFood = food.getSelectedItem().toString();
-                JSONArray memberArr = new JSONArray();
-                memberArr.put(roomFounder);
-                JSONObject obj = new JSONObject();
+//                JSONArray memberArr = new JSONArray();
+//                memberArr.put(roomFounder);
+//                JSONObject obj = new JSONObject();
+//                try {
+//                    obj.put("id", roomId)
+//                            .put("created_at", created_at)
+//                            .put("founder", roomFounder)
+//                            .put("title", roomTitle)
+//                            .put("food", roomFood)
+//                            .put("members", memberArr)
+//                            .put("lat", UserInfo.getLatv())
+//                            .put("lng", UserInfo.getLngv())
+//                            .put("max_num", 8);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                String body = obj.toString();
+//                HttpCall.setMethodtext("POST");
+//                HttpCall.setUrltext("/api/addroom");
+//                HttpCall.setBodytext(body);
+//                HttpCall.getResponse();
+                JSONObject data = new JSONObject();
                 try {
-                    obj.put("id", roomId)
-                            .put("created_at", created_at)
-                            .put("founder", roomFounder)
-                            .put("title", roomTitle)
-                            .put("food", roomFood)
-                            .put("members", memberArr)
-                            .put("lat", UserInfo.getLatv())
-                            .put("lng", UserInfo.getLngv())
-                            .put("max_num", 8);
+                    data.put("id", roomId);
+                    data.put("title", roomTitle);
+                    data.put("founder", roomFounder);
+                    data.put("food", roomFood);
+                    data.put("limit", 8); // change later
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                String body = obj.toString();
-                HttpCall.setMethodtext("POST");
-                HttpCall.setUrltext("/api/addroom");
-                HttpCall.setBodytext(body);
-                HttpCall.getResponse();
 
+                mSocket.emit(S_CREATE_ROOM, data);
                 dismiss();
+
+                Intent intent = new Intent(mActivity, RoomActivity.class);
+                intent.putExtra("room", roomId);
+                mActivity.startActivity(intent);
             }
         });
     }

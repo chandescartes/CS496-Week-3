@@ -42,7 +42,7 @@ public class RoomFragment extends Fragment {
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
     private RecyclerView.Adapter mAdapter;
-    private Socket mSocket;
+    static Socket mSocket = MainActivity.mSocket;
 
     public RoomFragment() {
         super();
@@ -58,8 +58,8 @@ public class RoomFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ChatApplication app = (ChatApplication) getActivity().getApplication();
-        mSocket = app.getSocket();
+//        ChatApplication app = (ChatApplication) getActivity().getApplication();
+//        mSocket = app.getSocket();
         mSocket.on(Socket.EVENT_CONNECT, onConnect);
         mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
@@ -67,7 +67,6 @@ public class RoomFragment extends Fragment {
         mSocket.on(S_NEW_MESSAGE, onNewMessage);
         mSocket.on(S_USER_JOINED, onUserJoined);
         mSocket.on(S_USER_LEFT, onUserLeft);
-        mSocket.connect();
     }
 
     @Override

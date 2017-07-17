@@ -1,26 +1,12 @@
 package com.example.q.cs496_week3;
 
-import android.Manifest;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,8 +23,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,21 +33,21 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Locale;
 
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    public final String S_GET_ROOMS = "get-rooms";
 
     private Boolean isFabOpen = false;
     private FloatingActionButton fab, fab1, fab2;
@@ -71,12 +55,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     CustomAdapter adapter;
     SwipeRefreshLayout mSwipeRefreshLayout;
+    ListView roomListView;
 
     boolean doubleBack = false;
     public static String nickname;
     double lat;
     double lng;
-    private Socket mSocket;
+    public static Socket mSocket;
     Context context;
 
     ArrayList<Room> items;
@@ -97,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        askForPermissions();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -107,12 +91,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ChatApplication app = (ChatApplication) this.getApplication();
         mSocket = app.getSocket();
+        mSocket.on("get-rooms", onGetRooms);
         mSocket.connect();
+//        mSocket.emit("get-rooms", "");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         context = this;
 
+        roomListView = (ListView) findViewById(R.id.roomListView);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab1 = (FloatingActionButton) findViewById(R.id.fab1);
         fab2 = (FloatingActionButton) findViewById(R.id.fab2);
@@ -174,6 +161,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Refresh();
     }
+
+    private Emitter.Listener onGetRooms = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onGetRooms", data.toString());
+        }
+    };
 
     private class CustomAdapter extends ArrayAdapter<Room> {
         public void filter(String searchText) {
@@ -335,10 +330,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void Refresh() {
-        RoomArrList = new ArrayList<Room>();
-        // listview
-        ListView listview = (ListView) findViewById(R.id.roomListView);
-        // sample test
+        RoomArrList.clear();
 
         HttpCall.setMethodtext("GET");
         HttpCall.setUrltext("/api/room");
@@ -373,8 +365,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         adapter = new CustomAdapter(context, R.layout.room_row, RoomArrList);
         adapter.filter("");
-        if (listview != null)
-            listview.setAdapter(adapter);
+        if (roomListView != null)
+            roomListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
@@ -392,19 +384,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     double deg2rad(double deg) {
         return deg * (Math.PI/180);
-    }
-
-    public void askForPermissions() {
-        Log.d("permissioncheck", "AAAA");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1
-                );
-            }
-        }
     }
 
     public void animateFAB(){
