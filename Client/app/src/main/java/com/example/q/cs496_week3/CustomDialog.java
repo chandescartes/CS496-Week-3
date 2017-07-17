@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -49,6 +51,7 @@ public class CustomDialog extends Dialog {
         lpWindow.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lpWindow.dimAmount = 0.8f;
         getWindow().setAttributes(lpWindow);
+        getWindow().getAttributes().windowAnimations = R.style.PauseDialogAnimation;
 
         setContentView(R.layout.dialog_layout);
 
@@ -80,8 +83,8 @@ public class CustomDialog extends Dialog {
                     data.put("founder", roomFounder);
                     data.put("food", roomFood);
                     data.put("limit", roomLimit);
-                    data.put("lat", UserInfo.getLatv());
-                    data.put("long", UserInfo.getLngv());
+                    data.put("lat", String.valueOf(UserInfo.getLatv()));
+                    data.put("long", String.valueOf(UserInfo.getLngv()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -93,6 +96,26 @@ public class CustomDialog extends Dialog {
                 Intent intent = new Intent(mActivity, RoomActivity.class);
                 intent.putExtra("room", roomId);
                 mActivity.startActivity(intent);
+            }
+        });
+
+        title.addTextChangedListener(new TextWatcher() {
+            String previousString = "";
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                previousString= charSequence.toString();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (title.getLineCount() >= 2)
+                {
+                    title.setText(previousString);
+                    title.setSelection(title.length());
+                }
             }
         });
     }

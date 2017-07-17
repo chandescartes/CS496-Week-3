@@ -135,7 +135,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ChatApplication app = (ChatApplication) this.getApplication();
         mSocket = app.getSocket();
-        mSocket.on("get-rooms", onGetRooms);
+        mSocket.on(S_GET_ROOMS, onGetRooms);
+        mSocket.on(S_JOIN_ROOM, onJoinRoom);
         mSocket.connect();
         mSocket.emit(S_GET_ROOMS, "");
 
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                animateFAB();
                 CustomDialog customDialog = new CustomDialog(MainActivity.this);
                 customDialog.show();
             }
@@ -166,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                animateFAB();
                 MatchDialog matchDialog = new MatchDialog(context);
                 matchDialog.show();
             }
@@ -284,8 +287,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     room.food = (String) item.get("food");
                     room.max_members = (Integer) item.get("limit");
                     room.current_members = ((JSONObject) item.get("sockets")).length();
-                    room.lat = (Double) item.get("lat");
-                    room.lng = (Double) item.get("long");
+                    room.lat = Double.parseDouble((String) item.get("lat"));
+                    room.lng = Double.parseDouble((String) item.get("long"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -354,13 +357,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             TextView numberview = (TextView) v.findViewById(R.id.list_number);
             ImageView kindoffood = (ImageView) v.findViewById(R.id.kind_of_food);
 
-            if (displayitems.get(position).food.equals("치킨")) kindoffood.setImageResource(R.drawable.chickenleg);
-            if (displayitems.get(position).food.equals("피자")) kindoffood.setImageResource(R.drawable.pizza);
-            if (displayitems.get(position).food.equals("족발/보쌈")) kindoffood.setImageResource(R.drawable.jokbal);
-            if (displayitems.get(position).food.equals("샌드위치/햄버거")) kindoffood.setImageResource(R.drawable.sandwich);
-            if (displayitems.get(position).food.equals("중국집")) kindoffood.setImageResource(R.drawable.noodles);
-            if (displayitems.get(position).food.equals("한식/분식")) kindoffood.setImageResource(R.drawable.rice);
-            if (displayitems.get(position).food.equals("일식")) kindoffood.setImageResource(R.drawable.sushi);
+            if (displayitems.get(position).food != null) {
+                if (displayitems.get(position).food.equals("치킨"))
+                    kindoffood.setImageResource(R.drawable.chickenleg);
+                if (displayitems.get(position).food.equals("피자"))
+                    kindoffood.setImageResource(R.drawable.pizza);
+                if (displayitems.get(position).food.equals("족발/보쌈"))
+                    kindoffood.setImageResource(R.drawable.jokbal);
+                if (displayitems.get(position).food.equals("샌드위치/햄버거"))
+                    kindoffood.setImageResource(R.drawable.sandwich);
+                if (displayitems.get(position).food.equals("중국집"))
+                    kindoffood.setImageResource(R.drawable.noodles);
+                if (displayitems.get(position).food.equals("한식/분식"))
+                    kindoffood.setImageResource(R.drawable.rice);
+                if (displayitems.get(position).food.equals("일식"))
+                    kindoffood.setImageResource(R.drawable.sushi);
+            }
 
             titleview.setText(displayitems.get(position).title);
             foodview.setText(displayitems.get(position).food);

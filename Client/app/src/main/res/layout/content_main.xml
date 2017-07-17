@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.q.cs496_week3.MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:showIn="@layout/app_bar_main"
+    android:id="@+id/content_main">
 
     <!--<Button-->
         <!--android:id="@+id/btn"-->
@@ -43,12 +44,11 @@
 
             <EditText
                 android:id="@+id/search_room_main_title"
-                android:layout_width="220dp"
+                android:layout_width="185dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:hint="Title"
                 android:maxLength="15"
-                android:singleLine="true"
                 android:background="#F0F0F1"/>
 
             <ImageButton
