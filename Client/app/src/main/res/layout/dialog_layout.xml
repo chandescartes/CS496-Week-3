@@ -3,13 +3,16 @@
     android:id="@+id/lay_background"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#66000000">
+    android:background="#66000000"
+    android:gravity="center">
 
     <RelativeLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/round_dialog">
+        android:background="@drawable/round_dialog"
+        android:gravity="center"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true">
 
         <TextView
             android:id="@+id/txt_dialog_title"
@@ -27,39 +30,80 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
+            android:maxLength="15"
             android:layout_below="@+id/txt_dialog_title" />
 
-        <TextView
-            android:id="@+id/txt_dialog_food"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:gravity="center"
-            android:text="Food"
-            android:textSize="15dp"
-            android:textStyle="bold"
-            android:layout_below="@+id/txt_modify_edit"/>
-
-        <Spinner
-            android:id="@+id/txt_modify_food"
+        <LinearLayout
+            android:id="@+id/txt_dialog_spinners"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:gravity="center"
-            android:entries="@array/category"
-            android:layout_marginTop="35dp"
-            android:layout_alignTop="@+id/txt_dialog_food"
-            android:layout_centerHorizontal="true">
-        </Spinner>
+            android:weightSum="2"
+            android:layout_below="@+id/txt_modify_edit"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp">
 
-        <ImageButton
-            android:layout_below="@+id/txt_modify_food"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:orientation="horizontal"
+                android:layout_weight="1"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/txt_dialog_food"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Food"
+                    android:textSize="15dp"
+                    android:textStyle="bold" />
+                <Spinner
+                    android:id="@+id/txt_modify_food"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/category"
+                    android:gravity="right">
+                </Spinner>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:id="@+id/txt_dialog_num"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Limit"
+                    android:textSize="15dp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/txt_modify_num"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/numbers"
+                    android:gravity="right">
+                </Spinner>
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:layout_below="@+id/txt_dialog_spinners"
             android:id="@+id/btn_modify_done"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="30dp"
-            android:src="@drawable/yes_button"
-            android:background="@android:color/transparent"
+            android:background="@drawable/submitbtn_style"
+            android:text="Submit"
+            android:textColor="@color/white"
             android:layout_marginTop="30dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="40dp"
+            android:layout_centerHorizontal="true"
             android:scaleType="fitCenter"/>
 
     </RelativeLayout>

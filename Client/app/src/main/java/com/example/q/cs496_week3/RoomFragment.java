@@ -5,9 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -31,7 +29,7 @@ import io.socket.emitter.Emitter;
 
 public class RoomFragment extends Fragment {
 
-    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left", S_DISCONNECT = "user-disconnected";
+    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left", S_USER_DISCONNECTED = "user-disconnected";
 
     String NICKNAME = UserInfo.getNickname();
     String ROOM = RoomActivity.ROOM;
@@ -67,6 +65,7 @@ public class RoomFragment extends Fragment {
         mSocket.on(S_NEW_MESSAGE, onNewMessage);
         mSocket.on(S_USER_JOINED, onUserJoined);
         mSocket.on(S_USER_LEFT, onUserLeft);
+        mSocket.connect();
     }
 
     @Override
@@ -108,7 +107,7 @@ public class RoomFragment extends Fragment {
         super.onDestroy();
 
         JSONObject data = createData(new String[]{}, new String[]{});
-        mSocket.emit(S_DISCONNECT, data);
+        mSocket.emit(S_USER_DISCONNECTED, data);
 
         mSocket.disconnect();
         mSocket.off(Socket.EVENT_CONNECT, onConnect);

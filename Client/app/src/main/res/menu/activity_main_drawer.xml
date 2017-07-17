@@ -4,15 +4,11 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/make_room"
-            android:icon="@drawable/add"
+            android:icon="@drawable/chat"
             android:title="방 만들기" />
         <item
-            android:id="@+id/join_room"
-            android:icon="@drawable/chat"
-            android:title="방 참여하기" />
-        <item
             android:id="@+id/quick_match"
-            android:icon="@drawable/magnifier"
+            android:icon="@drawable/quick_black"
             android:title="빠른 입장" />
     </group>
 

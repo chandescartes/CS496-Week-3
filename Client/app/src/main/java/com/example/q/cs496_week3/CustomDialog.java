@@ -16,7 +16,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -39,7 +38,8 @@ public class CustomDialog extends Dialog {
     static Socket mSocket = MainActivity.mSocket;
     EditText title;
     Spinner food;
-    ImageButton submit;
+    Spinner max_num;
+    Button submit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,8 @@ public class CustomDialog extends Dialog {
 
         title = (EditText) findViewById(R.id.txt_modify_edit);
         food = (Spinner) findViewById(R.id.txt_modify_food);
-        submit = (ImageButton) findViewById(R.id.btn_modify_done);
+        submit = (Button) findViewById(R.id.btn_modify_done);
+        max_num = (Spinner) findViewById(R.id.txt_modify_num);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
@@ -69,38 +70,23 @@ public class CustomDialog extends Dialog {
                 String roomFounder = UserInfo.getIdStr();
                 String roomId = roomFounder + created_at;
                 String roomFood = food.getSelectedItem().toString();
-//                JSONArray memberArr = new JSONArray();
-//                memberArr.put(roomFounder);
-//                JSONObject obj = new JSONObject();
-//                try {
-//                    obj.put("id", roomId)
-//                            .put("created_at", created_at)
-//                            .put("founder", roomFounder)
-//                            .put("title", roomTitle)
-//                            .put("food", roomFood)
-//                            .put("members", memberArr)
-//                            .put("lat", UserInfo.getLatv())
-//                            .put("lng", UserInfo.getLngv())
-//                            .put("max_num", 8);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//                String body = obj.toString();
-//                HttpCall.setMethodtext("POST");
-//                HttpCall.setUrltext("/api/addroom");
-//                HttpCall.setBodytext(body);
-//                HttpCall.getResponse();
+                int roomLimit = Integer.parseInt((String) max_num.getSelectedItem());
+
                 JSONObject data = new JSONObject();
                 try {
                     data.put("id", roomId);
+                    data.put("created_at", created_at);
                     data.put("title", roomTitle);
                     data.put("founder", roomFounder);
                     data.put("food", roomFood);
-                    data.put("limit", 8); // change later
+                    data.put("limit", roomLimit);
+                    data.put("lat", UserInfo.getLatv());
+                    data.put("long", UserInfo.getLngv());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
+                mSocket.connect();
                 mSocket.emit(S_CREATE_ROOM, data);
                 dismiss();
 
