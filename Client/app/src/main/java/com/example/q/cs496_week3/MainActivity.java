@@ -13,13 +13,17 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.TypedArrayUtils;
 import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,9 +41,11 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +65,9 @@ import org.json.JSONObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Locale;
 
 import io.socket.client.Socket;
@@ -69,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FloatingActionButton fab, fab1, fab2;
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
 
+    EditText mainsearchtitle;
+    ImageButton mainsearchbtn;
+    Spinner mainsearchfood;
     CustomAdapter adapter;
     SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -77,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     double lat;
     double lng;
     private Socket mSocket;
-    Context context;
+    static Context context;
 
     ArrayList<Room> items;
     ArrayList<Room> RoomArrList = new ArrayList<>();
@@ -93,6 +105,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         double lng;
         int max_member;
         ArrayList<String> member;
+
+        public double getDistance() {
+            return getDistanceFromLatLonInm(lat, lng, UserInfo.getLatv(), UserInfo.getLngv());
+        }
+    }
+
+    public class Ascending implements Comparator<Room> {
+        public int compare(Room room, Room t1) {
+            return (int) ((room.getDistance() - t1.getDistance())*10000);
+        }
     }
 
     @Override
@@ -133,6 +155,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 customDialog.show();
             }
         });
+        fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MatchDialog matchDialog = new MatchDialog(context);
+                matchDialog.show();
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -144,25 +173,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         // remove later
-        Button button = (Button) findViewById(R.id.btn);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                JSONObject data = new JSONObject();
-                try {
-                    data.put("nickname", nickname);
-                    data.put("room", "room1");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return;
-                }
-
-                mSocket.emit("user-joined", data);
-                Intent intent = new Intent(MainActivity.this, RoomActivity.class);
-                intent.putExtra("room", "room1");
-                startActivity(intent);
-            }
-        });
+//        Button button = (Button) findViewById(R.id.btn);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                JSONObject data = new JSONObject();
+//                try {
+//                    data.put("nickname", nickname);
+//                    data.put("room", "room1");
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                    return;
+//                }
+//
+//                mSocket.emit("user-joined", data);
+//                Intent intent = new Intent(MainActivity.this, RoomActivity.class);
+//                intent.putExtra("room", "room1");
+//                startActivity(intent);
+//            }
+//        });
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -173,17 +202,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
         mSwipeRefreshLayout.setColorSchemeResources(
-                android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
                 android.R.color.holo_red_light
         );
 
         Refresh();
+        mainsearchtitle = (EditText) findViewById(R.id.search_room_main_title);
+        mainsearchfood = (Spinner) findViewById(R.id.search_room_main_food);
+        mainsearchbtn = (ImageButton) findViewById(R.id.searchBtn);
+        mainsearchtitle.addTextChangedListener(new TextWatcher() {
+            String previousString = "";
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                previousString= charSequence.toString();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (mainsearchtitle.getLineCount() >= 2)
+                {
+                    mainsearchtitle.setText(previousString);
+                    mainsearchtitle.setSelection(mainsearchtitle.length());
+                }
+            }
+        });
+        mainsearchbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String search_title = mainsearchtitle.getText().toString().trim();
+                String search_food = mainsearchfood.getSelectedItem().toString();
+
+                adapter.filter(search_title, search_food);
+            }
+        });
     }
 
     private class CustomAdapter extends ArrayAdapter<Room> {
-        public void filter(String searchText) {
+        public void filter(String searchText, String searchFood) {
             searchText = searchText.toLowerCase(Locale.getDefault());
             displayitems.clear();
             if (searchText.length() == 0) {
@@ -191,7 +250,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else {
                 for (Room item : items) {
                     if (item.title.contains(searchText)) {
-                        displayitems.add(item);
+                        if (item.food.equals(searchFood) || searchFood.equals("All"))
+                            displayitems.add(item);
                     }
                 }
             }
@@ -250,7 +310,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             double distance = getDistanceFromLatLonInm(displayitems.get(position).lat,
                     displayitems.get(position).lng,
                     UserInfo.getLatv(), UserInfo.getLngv());
-            distanceview.setText(String.valueOf(Math.round(distance))+"m");
+            if (distance > 1000000) distanceview.setText(String.valueOf(Math.round(distance/10000d)/100d)+"Mm");
+            else if (distance > 1000) distanceview.setText(String.valueOf(Math.round(distance/10d)/100d)+"km");
+            else distanceview.setText(String.valueOf(Math.round(distance))+"m");
             String numbers = String.valueOf(displayitems.get(position).member.size())+" / "
                     +String.valueOf(displayitems.get(position).max_member);
             numberview.setText(numbers);
@@ -332,11 +394,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.make_room) {
-
-        } else if (id == R.id.join_room) {
-
+            CustomDialog customDialog = new CustomDialog(context);
+            customDialog.show();
         } else if (id == R.id.quick_match) {
-
+            MatchDialog matchDialog = new MatchDialog(context);
+            matchDialog.show();
         } else if (id == R.id.my_profile) {
             Intent intent = new Intent(MainActivity.this, EditNickname.class);
             startActivity(intent);
@@ -386,9 +448,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
             RoomArrList.add(a);
         }
+        Collections.sort(RoomArrList, new Ascending());
 
         adapter = new CustomAdapter(context, R.layout.room_row, RoomArrList);
-        adapter.filter("");
+        adapter.filter("","All");
         if (listview != null)
             listview.setAdapter(adapter);
         adapter.notifyDataSetChanged();

@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +45,7 @@ public class CustomDialog extends Dialog {
         lpWindow.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lpWindow.dimAmount = 0.8f;
         getWindow().setAttributes(lpWindow);
+        getWindow().getAttributes().windowAnimations = R.style.PauseDialogAnimation;
 
         setContentView(R.layout.dialog_layout);
 
@@ -61,6 +64,10 @@ public class CustomDialog extends Dialog {
                         String.valueOf(c.get(Calendar.SECOND));
 
                 String roomTitle = title.getText().toString().trim();
+                if (TextUtils.isEmpty(roomTitle)) {
+                    Toast.makeText(MainActivity.context, "Please enter a valid title", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 String roomFounder = UserInfo.getIdStr();
                 String roomId = roomFounder+created_at;
                 String roomFood = food.getSelectedItem().toString();

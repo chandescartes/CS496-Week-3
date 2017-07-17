@@ -30,53 +30,54 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
+            android:maxLength="15"
             android:layout_below="@+id/txt_dialog_title" />
 
         <LinearLayout
             android:id="@+id/txt_dialog_spinners"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:gravity="center"
             android:weightSum="2"
             android:layout_below="@+id/txt_modify_edit"
-            android:layout_centerHorizontal="true">
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp">
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:orientation="horizontal"
                 android:layout_weight="1"
                 android:gravity="center">
                 <TextView
                     android:id="@+id/txt_dialog_food"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
                     android:text="Food"
                     android:textSize="15dp"
                     android:textStyle="bold" />
                 <Spinner
                     android:id="@+id/txt_modify_food"
-                    android:layout_width="wrap_content"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:entries="@array/category"
-                    android:layout_marginTop="15dp">
+                    android:gravity="right">
                 </Spinner>
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="20dp">
 
                 <TextView
                     android:id="@+id/txt_dialog_num"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
                     android:gravity="center"
                     android:text="Limit"
                     android:textSize="15dp"
@@ -84,11 +85,10 @@
 
                 <Spinner
                     android:id="@+id/txt_modify_num"
-                    android:layout_width="wrap_content"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
                     android:entries="@array/numbers"
-                    android:gravity="center">
+                    android:gravity="right">
                 </Spinner>
             </LinearLayout>
         </LinearLayout>

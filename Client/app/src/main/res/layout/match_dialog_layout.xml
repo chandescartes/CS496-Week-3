@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lay_background"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#66000000"
+    android:gravity="center">
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_dialog"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true">
+
+        <TextView
+            android:id="@+id/txt_match_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Food"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"/>
+        <Spinner
+            android:layout_below="@+id/txt_match_text"
+            android:id="@+id/txt_match_food"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:entries="@array/category"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp">
+        </Spinner>
+
+        <Button
+            android:layout_below="@+id/txt_match_food"
+            android:id="@+id/btn_match_done"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:background="@drawable/submitbtn_style"
+            android:text="Submit"
+            android:textColor="@color/white"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="40dp"
+            android:layout_centerHorizontal="true"
+            android:scaleType="fitCenter"/>
+
+    </RelativeLayout>
+
+
+</RelativeLayout>
