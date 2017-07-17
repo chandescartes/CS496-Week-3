@@ -14,7 +14,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -33,7 +32,8 @@ public class CustomDialog extends Dialog {
 
     EditText title;
     Spinner food;
-    ImageButton submit;
+    Spinner max_num;
+    Button submit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +48,8 @@ public class CustomDialog extends Dialog {
 
         title = (EditText) findViewById(R.id.txt_modify_edit);
         food = (Spinner) findViewById(R.id.txt_modify_food);
-        submit = (ImageButton) findViewById(R.id.btn_modify_done);
+        submit = (Button) findViewById(R.id.btn_modify_done);
+        max_num = (Spinner) findViewById(R.id.txt_modify_num);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
@@ -63,6 +64,7 @@ public class CustomDialog extends Dialog {
                 String roomFounder = UserInfo.getIdStr();
                 String roomId = roomFounder+created_at;
                 String roomFood = food.getSelectedItem().toString();
+                String roomNum = max_num.getSelectedItem().toString();
                 JSONArray memberArr = new JSONArray();
                 memberArr.put(roomFounder);
                 JSONObject obj = new JSONObject();
@@ -75,7 +77,7 @@ public class CustomDialog extends Dialog {
                             .put("members", memberArr)
                             .put("lat", UserInfo.getLatv())
                             .put("lng", UserInfo.getLngv())
-                            .put("max_num", 8);
+                            .put("max_num", Integer.parseInt(roomNum));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

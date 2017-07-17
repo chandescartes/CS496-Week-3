@@ -126,6 +126,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 animateFAB();
             }
         });
+        fab1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CustomDialog customDialog = new CustomDialog(context);
+                customDialog.show();
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -224,6 +231,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             TextView foodview = (TextView) v.findViewById(R.id.list_food);
             TextView distanceview = (TextView) v.findViewById(R.id.list_distance);
             TextView numberview = (TextView) v.findViewById(R.id.list_number);
+            ImageView kindoffood = (ImageView) v.findViewById(R.id.kind_of_food);
+
+            if (displayitems.get(position).food.equals("치킨")) kindoffood.setImageResource(R.drawable.chickenleg);
+            if (displayitems.get(position).food.equals("피자")) kindoffood.setImageResource(R.drawable.pizza);
+            if (displayitems.get(position).food.equals("족발/보쌈")) kindoffood.setImageResource(R.drawable.jokbal);
+            if (displayitems.get(position).food.equals("샌드위치/햄버거")) kindoffood.setImageResource(R.drawable.sandwich);
+            if (displayitems.get(position).food.equals("중국집")) kindoffood.setImageResource(R.drawable.noodles);
+            if (displayitems.get(position).food.equals("한식/분식")) kindoffood.setImageResource(R.drawable.rice);
+            if (displayitems.get(position).food.equals("일식")) kindoffood.setImageResource(R.drawable.sushi);
 
             titleview.setText(displayitems.get(position).title);
             foodview.setText(displayitems.get(position).food);

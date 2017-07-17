@@ -7,10 +7,11 @@
     android:weightSum="4">
 
     <ImageView
+        android:id="@+id/kind_of_food"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_gravity="center"
-        android:src="@drawable/chickenleg"
+        android:src="@drawable/all"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"/>
 
