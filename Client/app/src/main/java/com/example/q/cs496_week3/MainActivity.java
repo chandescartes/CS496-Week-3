@@ -1,8 +1,11 @@
 package com.example.q.cs496_week3;
 
+import android.Manifest;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -452,6 +455,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        askForPermissions();
         getMenuInflater().inflate(R.menu.main, menu);
         TextView nicknameText = (TextView) findViewById(R.id.nicknameHeader);
         nicknameText.setText(nickname);
@@ -555,6 +559,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             isFabOpen = true;
             Log.d("Raj","open");
 
+        }
+    }
+
+    public void askForPermissions() {
+        Log.d("permissioncheck", "AAAA");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            }
         }
     }
 }

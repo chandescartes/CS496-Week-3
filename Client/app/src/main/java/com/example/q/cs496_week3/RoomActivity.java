@@ -1,5 +1,6 @@
 package com.example.q.cs496_week3;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.GravityCompat;
@@ -51,7 +52,9 @@ public class RoomActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (doubleBack) {
             super.onBackPressed();
-            return;
+            Intent intent = new Intent(RoomActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
 
         doubleBack = true;

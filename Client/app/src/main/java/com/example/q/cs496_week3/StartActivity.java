@@ -53,6 +53,7 @@ public class StartActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             Intent intent = new Intent(StartActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } else {
             nicknameEditText = (EditText) findViewById(R.id.nicknameEditText);
@@ -102,6 +103,7 @@ public class StartActivity extends AppCompatActivity {
             UserInfo.setNickname(nickname);
 
             Intent intent = new Intent(StartActivity.this, EditLocation.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }
     };
