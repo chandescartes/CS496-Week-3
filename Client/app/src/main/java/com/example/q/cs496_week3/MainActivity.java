@@ -5,8 +5,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.TypedArrayUtils;
+import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Base64;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +36,13 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +59,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -58,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FloatingActionButton fab, fab1, fab2;
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
 
+    EditText mainsearchtitle;
+    ImageButton mainsearchbtn;
+    Spinner mainsearchfood;
     CustomAdapter adapter;
     SwipeRefreshLayout mSwipeRefreshLayout;
     ListView roomListView;
@@ -66,12 +89,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static String nickname;
     double lat;
     double lng;
+
     public static Socket mSocket;
-    Context context;
+    static Context context;
 
     ArrayList<Room> items;
     ArrayList<Room> RoomArrList = new ArrayList<>();
-    ArrayList<Room> displayItems = new ArrayList<>();
+    ArrayList<Room> displayitems = new ArrayList<>();
 
     public class Room {
         String id;
@@ -83,6 +107,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         double lng;
         int max_members;
         int current_members;
+
+        public double getDistance() {
+            return getDistanceFromLatLonInm(lat, lng, UserInfo.getLatv(), UserInfo.getLngv());
+        }
+    }
+
+    public class Ascending implements Comparator<Room> {
+        public int compare(Room room, Room t1) {
+            return (int) ((room.getDistance() - t1.getDistance())*10000);
+        }
     }
 
     @Override
@@ -95,14 +129,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         lng = UserInfo.getLngv();
         roomListView = (ListView) findViewById(R.id.roomListView);
         adapter = new CustomAdapter(this, R.layout.room_row, RoomArrList);
-        adapter.filter("");
+        adapter.filter("", "All");
         roomListView.setAdapter(adapter);
         roomListView.setOnItemClickListener(roomListViewListener);
 
         ChatApplication app = (ChatApplication) this.getApplication();
         mSocket = app.getSocket();
-        mSocket.on(S_GET_ROOMS, onGetRooms);
-        mSocket.on(S_JOIN_ROOM, onJoinRoom);
+        mSocket.on("get-rooms", onGetRooms);
         mSocket.connect();
         mSocket.emit(S_GET_ROOMS, "");
 
@@ -130,6 +163,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 customDialog.show();
             }
         });
+        fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MatchDialog matchDialog = new MatchDialog(context);
+                matchDialog.show();
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -149,11 +189,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
         mSwipeRefreshLayout.setColorSchemeResources(
-                android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
                 android.R.color.holo_red_light
         );
+
+        mainsearchtitle = (EditText) findViewById(R.id.search_room_main_title);
+        mainsearchfood = (Spinner) findViewById(R.id.search_room_main_food);
+        mainsearchbtn = (ImageButton) findViewById(R.id.searchBtn);
+        mainsearchtitle.addTextChangedListener(new TextWatcher() {
+            String previousString = "";
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                previousString= charSequence.toString();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (mainsearchtitle.getLineCount() >= 2)
+                {
+                    mainsearchtitle.setText(previousString);
+                    mainsearchtitle.setSelection(mainsearchtitle.length());
+                }
+            }
+        });
+        mainsearchbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String search_title = mainsearchtitle.getText().toString().trim();
+                String search_food = mainsearchfood.getSelectedItem().toString();
+
+                adapter.filter(search_title, search_food);
+            }
+        });
     }
 
     private AdapterView.OnItemClickListener roomListViewListener = new AdapterView.OnItemClickListener() {
@@ -234,15 +303,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     };
 
     private class CustomAdapter extends ArrayAdapter<Room> {
-        public void filter(String searchText) {
+        public void filter(String searchText, String searchFood) {
             searchText = searchText.toLowerCase(Locale.getDefault());
-            displayItems.clear();
+            displayitems.clear();
             if (searchText.length() == 0) {
-                displayItems.addAll(items);
+                displayitems.addAll(items);
             } else {
                 for (Room item : items) {
                     if (item.title.contains(searchText)) {
-                        displayItems.add(item);
+                        if (item.food.equals(searchFood) || searchFood.equals("All"))
+                            displayitems.add(item);
                     }
                 }
             }
@@ -251,19 +321,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         public CustomAdapter(Context context, int textViewResourceId, ArrayList<Room> objects) {
             super(context, textViewResourceId, objects);
-            displayItems = objects;
+            displayitems = objects;
             items = new ArrayList<>();
-            items.addAll(displayItems);
+            items.addAll(displayitems);
         }
 
         @Override
         public int getCount() {
-            return displayItems.size();
+            return displayitems.size();
         }
 
         @Override
         public Room getItem(int position) {
-            return displayItems.get(position);
+            return displayitems.get(position);
         }
 
         @Override
@@ -284,35 +354,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             TextView numberview = (TextView) v.findViewById(R.id.list_number);
             ImageView kindoffood = (ImageView) v.findViewById(R.id.kind_of_food);
 
-            if (displayItems.get(position).food != null) {
-                if (displayItems.get(position).food.equals("치킨"))
-                    kindoffood.setImageResource(R.drawable.chickenleg);
-                if (displayItems.get(position).food.equals("피자"))
-                    kindoffood.setImageResource(R.drawable.pizza);
-                if (displayItems.get(position).food.equals("족발/보쌈"))
-                    kindoffood.setImageResource(R.drawable.jokbal);
-                if (displayItems.get(position).food.equals("샌드위치/햄버거"))
-                    kindoffood.setImageResource(R.drawable.sandwich);
-                if (displayItems.get(position).food.equals("중국집"))
-                    kindoffood.setImageResource(R.drawable.noodles);
-                if (displayItems.get(position).food.equals("한식/분식"))
-                    kindoffood.setImageResource(R.drawable.rice);
-                if (displayItems.get(position).food.equals("일식"))
-                    kindoffood.setImageResource(R.drawable.sushi);
-            }
+            if (displayitems.get(position).food.equals("치킨")) kindoffood.setImageResource(R.drawable.chickenleg);
+            if (displayitems.get(position).food.equals("피자")) kindoffood.setImageResource(R.drawable.pizza);
+            if (displayitems.get(position).food.equals("족발/보쌈")) kindoffood.setImageResource(R.drawable.jokbal);
+            if (displayitems.get(position).food.equals("샌드위치/햄버거")) kindoffood.setImageResource(R.drawable.sandwich);
+            if (displayitems.get(position).food.equals("중국집")) kindoffood.setImageResource(R.drawable.noodles);
+            if (displayitems.get(position).food.equals("한식/분식")) kindoffood.setImageResource(R.drawable.rice);
+            if (displayitems.get(position).food.equals("일식")) kindoffood.setImageResource(R.drawable.sushi);
 
-            titleview.setText(displayItems.get(position).title);
-            foodview.setText(displayItems.get(position).food);
-            Log.d("lat1", String.valueOf(displayItems.get(position).lat));
-            Log.d("lng1", String.valueOf(displayItems.get(position).lng));
-            Log.d("lat2", String.valueOf(UserInfo.getLatv()));
-            Log.d("lng2", String.valueOf(UserInfo.getLngv()));
-            double distance = getDistanceFromLatLonInm(displayItems.get(position).lat,
-                    displayItems.get(position).lng,
+            titleview.setText(displayitems.get(position).title);
+            foodview.setText(displayitems.get(position).food);
+            Log.d("lat1",String.valueOf(displayitems.get(position).lat));
+            Log.d("lng1",String.valueOf(displayitems.get(position).lng));
+            Log.d("lat2",String.valueOf(UserInfo.getLatv()));
+            Log.d("lng2",String.valueOf(UserInfo.getLngv()));
+            double distance = getDistanceFromLatLonInm(displayitems.get(position).lat,
+                    displayitems.get(position).lng,
                     UserInfo.getLatv(), UserInfo.getLngv());
-            distanceview.setText(String.valueOf(Math.round(distance)) + "m");
-            String numbers = String.valueOf(displayItems.get(position).current_members) + " / "
-                    + String.valueOf(displayItems.get(position).max_members);
+            if (distance > 1000000) distanceview.setText(String.valueOf(Math.round(distance/10000d)/100d)+"Mm");
+            else if (distance > 1000) distanceview.setText(String.valueOf(Math.round(distance/10d)/100d)+"km");
+            else distanceview.setText(String.valueOf(Math.round(distance))+"m");
+            String numbers = String.valueOf(displayitems.get(position).current_members)+" / "
+                    +String.valueOf(displayitems.get(position).max_members);
             numberview.setText(numbers);
 
             return v;
@@ -410,66 +473,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-//    private void Refresh() {
-//        RoomArrList.clear();
-//
-//        HttpCall.setMethodtext("GET");
-//        HttpCall.setUrltext("/api/room");
-//        JSONArray roomlist = new JSONArray();
-//        try {
-//            roomlist = new JSONArray(HttpCall.getResponse());
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//        for (int i=0;i<roomlist.length();i++) {
-//            Room a = new Room();
-//            try {
-//                a.id = roomlist.getJSONObject(i).getString("id");
-//                a.title = roomlist.getJSONObject(i).getString("title");
-//                a.food = roomlist.getJSONObject(i).getString("food");
-//                a.created_at = roomlist.getJSONObject(i).getString("created_at");
-//                a.founder = roomlist.getJSONObject(i).getString("founder");
-//                a.lat = roomlist.getJSONObject(i).getDouble("lat");
-//                a.lng = roomlist.getJSONObject(i).getDouble("lng");
-//                a.max_members = roomlist.getJSONObject(i).getInt("max_num");
-//                Log.d("maxmemberis",String.valueOf(a.max_members));
-//                a.member = new ArrayList<>();
-//                for (int j=0;j<roomlist.getJSONObject(i).getJSONArray("members").length();j++) {
-//                    a.member.add(roomlist.getJSONObject(i).getJSONArray("members").getString(j));
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            RoomArrList.add(a);
-//        }
-//
-//        adapter = new CustomAdapter(context, R.layout.room_row, RoomArrList);
-//        adapter.filter("");
-//        if (roomListView != null)
-//            roomListView.setAdapter(adapter);
-//        adapter.notifyDataSetChanged();
-//    }
-
-    double getDistanceFromLatLonInm(double lat1, double lon1, double lat2, double lon2) {
+    double getDistanceFromLatLonInm(double lat1,double lon1,double lat2,double lon2) {
         double R = 6371; // Radius of the earth in km
-        double dLat = deg2rad(lat2 - lat1);  // deg2rad below
-        double dLon = deg2rad(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double dLat = deg2rad(lat2-lat1);  // deg2rad below
+        double dLon = deg2rad(lon2-lon1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+                * Math.sin(dLon/2) * Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         double d = R * c; // Distance in km
         Log.d("distanceis", String.valueOf(d));
-        return d * 1000;
+        return d*1000;
     }
 
     double deg2rad(double deg) {
-        return deg * (Math.PI / 180);
+        return deg * (Math.PI/180);
     }
 
-    public void animateFAB() {
+    public void animateFAB(){
 
-        if (isFabOpen) {
+        if(isFabOpen){
 
             fab.startAnimation(rotate_backward);
             fab1.startAnimation(fab_close);
@@ -487,7 +509,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fab1.setClickable(true);
             fab2.setClickable(true);
             isFabOpen = true;
-            Log.d("Raj", "open");
+            Log.d("Raj","open");
 
         }
     }
