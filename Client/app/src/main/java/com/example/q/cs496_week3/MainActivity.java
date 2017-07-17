@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     double lat;
     double lng;
 
-    public static Socket mSocket;
+    Socket mSocket;
     static Context context;
 
     ArrayList<Room> items;
@@ -184,13 +184,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mSocket.emit(S_GET_ROOMS, "");
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-        });
+        mSwipeRefreshLayout.setOnRefreshListener(swipeRefresh);
         mSwipeRefreshLayout.setColorSchemeResources(
                 android.R.color.holo_red_light
         );
@@ -198,35 +192,73 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mainsearchtitle = (EditText) findViewById(R.id.search_room_main_title);
         mainsearchfood = (Spinner) findViewById(R.id.search_room_main_food);
         mainsearchbtn = (ImageButton) findViewById(R.id.searchBtn);
-        mainsearchtitle.addTextChangedListener(new TextWatcher() {
-            String previousString = "";
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                previousString= charSequence.toString();
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                if (mainsearchtitle.getLineCount() >= 2)
-                {
-                    mainsearchtitle.setText(previousString);
-                    mainsearchtitle.setSelection(mainsearchtitle.length());
-                }
-            }
-        });
-        mainsearchbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String search_title = mainsearchtitle.getText().toString().trim();
-                String search_food = mainsearchfood.getSelectedItem().toString();
-
-                adapter.filter(search_title, search_food);
-            }
-        });
+        mainsearchtitle.addTextChangedListener(textWatcher);
+        mainsearchbtn.setOnClickListener(searchListener);
     }
+
+    @Override
+    public void onPause () {
+        super.onPause();
+        mSwipeRefreshLayout.setOnRefreshListener(null);
+        mainsearchtitle.addTextChangedListener(null);
+        mainsearchbtn.setOnClickListener(null);
+    }
+
+    @Override
+    public void onResume () {
+        super.onResume();
+        Log.d("RESUME", "RESUME");
+
+        ChatApplication app = (ChatApplication) this.getApplication();
+        mSocket = app.getSocket();
+
+        mSocket.on(S_GET_ROOMS, onGetRooms);
+        mSocket.on(S_JOIN_ROOM, onJoinRoom);
+        mSocket.connect();
+        mSocket.emit(S_GET_ROOMS, "");
+
+        mSwipeRefreshLayout.setOnRefreshListener(swipeRefresh);
+        mainsearchtitle.addTextChangedListener(textWatcher);
+        mainsearchbtn.setOnClickListener(searchListener);
+    }
+
+    SwipeRefreshLayout.OnRefreshListener swipeRefresh = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            mSocket.emit(S_GET_ROOMS, "");
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
+    };
+
+    TextWatcher textWatcher = new TextWatcher() {
+        String previousString = "";
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            previousString= charSequence.toString();
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            if (mainsearchtitle.getLineCount() >= 2)
+            {
+                mainsearchtitle.setText(previousString);
+                mainsearchtitle.setSelection(mainsearchtitle.length());
+            }
+        }
+    };
+
+    View.OnClickListener searchListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            String search_title = mainsearchtitle.getText().toString().trim();
+            String search_food = mainsearchfood.getSelectedItem().toString();
+
+            adapter.filter(search_title, search_food);
+        }
+    };
 
     private AdapterView.OnItemClickListener roomListViewListener = new AdapterView.OnItemClickListener() {
         @Override

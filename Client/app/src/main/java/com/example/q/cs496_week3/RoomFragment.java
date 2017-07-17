@@ -40,7 +40,7 @@ public class RoomFragment extends Fragment {
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
     private RecyclerView.Adapter mAdapter;
-    static Socket mSocket = MainActivity.mSocket;
+    Socket mSocket;
 
     public RoomFragment() {
         super();
@@ -56,8 +56,8 @@ public class RoomFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        ChatApplication app = (ChatApplication) getActivity().getApplication();
-//        mSocket = app.getSocket();
+        ChatApplication app = (ChatApplication) getActivity().getApplication();
+        mSocket = app.getSocket();
         mSocket.on(Socket.EVENT_CONNECT, onConnect);
         mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
@@ -103,20 +103,20 @@ public class RoomFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
 
         JSONObject data = createData(new String[]{}, new String[]{});
         mSocket.emit(S_USER_DISCONNECTED, data);
 
-        mSocket.disconnect();
-        mSocket.off(Socket.EVENT_CONNECT, onConnect);
-        mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off(S_NEW_MESSAGE, onNewMessage);
-        mSocket.off(S_USER_JOINED, onUserJoined);
-        mSocket.off(S_USER_LEFT, onUserLeft);
+//        mSocket.disconnect();
+//        mSocket.off(Socket.EVENT_CONNECT, onConnect);
+//        mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
+//        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
+//        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+//        mSocket.off(S_NEW_MESSAGE, onNewMessage);
+//        mSocket.off(S_USER_JOINED, onUserJoined);
+//        mSocket.off(S_USER_LEFT, onUserLeft);
     }
 
     private void attemptSend() {

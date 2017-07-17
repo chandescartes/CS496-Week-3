@@ -37,7 +37,7 @@ public class CustomDialog extends Dialog {
         mActivity = activity;
     }
 
-    static Socket mSocket = MainActivity.mSocket;
+    Socket mSocket;
     EditText title;
     Spinner food;
     Spinner max_num;
@@ -46,6 +46,9 @@ public class CustomDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ChatApplication app = (ChatApplication) mActivity.getApplication();
+        mSocket = app.getSocket();
 
         WindowManager.LayoutParams lpWindow = new WindowManager.LayoutParams();
         lpWindow.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
