@@ -299,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 } else {
                     int reason = resultData.getInt("reason");
                     final String message = (reason == NONEXISTENT) ? "This room doesn't exist anymore!" : "Sorry! This room is full.";
-                    if (reason == NONEXISTENT) mSocket.emit(S_GET_ROOMS, "");
+                    mSocket.emit(S_GET_ROOMS, "");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

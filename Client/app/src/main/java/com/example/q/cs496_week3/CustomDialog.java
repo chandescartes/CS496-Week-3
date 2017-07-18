@@ -50,9 +50,6 @@ public class CustomDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        ChatApplication app = (ChatApplication) mActivity.getApplication();
-//        mSocket = app.getSocket();
-
         WindowManager.LayoutParams lpWindow = new WindowManager.LayoutParams();
         lpWindow.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lpWindow.dimAmount = 0.8f;
@@ -79,6 +76,11 @@ public class CustomDialog extends Dialog {
                         String.valueOf(c.get(Calendar.SECOND));
 
                 String roomTitle = title.getText().toString().trim();
+
+                if (roomTitle.isEmpty()) {
+                    return;
+                }
+                
                 String roomFounder = UserInfo.getIdStr();
                 String roomId = roomFounder + created_at;
                 String roomFood = food.getSelectedItem().toString();
@@ -98,12 +100,12 @@ public class CustomDialog extends Dialog {
                     e.printStackTrace();
                 }
 
-//                mSocket.connect();
                 mSocket.emit(S_CREATE_ROOM, data);
                 dismiss();
 
                 Intent intent = new Intent(mActivity, RoomActivity.class);
                 intent.putExtra("room", roomId);
+                intent.putExtra("title", roomTitle);
                 mActivity.startActivity(intent);
             }
         });
