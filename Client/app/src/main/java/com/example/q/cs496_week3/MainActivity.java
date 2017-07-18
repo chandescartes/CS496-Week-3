@@ -342,6 +342,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 RoomArrList.add(room);
             }
+            Ascending ascending = new Ascending();
+            Collections.sort(RoomArrList, ascending);
 
             runOnUiThread(new Runnable() {
                 @Override
