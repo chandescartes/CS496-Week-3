@@ -51,6 +51,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -75,6 +76,9 @@ import io.socket.emitter.Emitter;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    public final int NONEXISTENT = 0;
+    public final int FULL = 1;
+
     public final String S_GET_ROOMS = "get-rooms";
     public final String S_JOIN_ROOM = "join-room";
     public final String S_USER_JOINED = "user-joined";
@@ -92,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ListView roomListView;
 
     boolean doubleBack = false;
-    public static String nickname;
     double lat;
     double lng;
 
@@ -121,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public class Ascending implements Comparator<Room> {
         public int compare(Room room, Room t1) {
-            return (int) ((room.getDistance() - t1.getDistance())*10000);
+            return (int) ((room.getDistance() - t1.getDistance()) * 10000);
         }
     }
 
@@ -131,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        nickname = UserInfo.getNickname();
         lat = UserInfo.getLatv();
         lng = UserInfo.getLngv();
         roomListView = (ListView) findViewById(R.id.roomListView);
@@ -140,12 +142,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         roomListView.setAdapter(adapter);
         roomListView.setOnItemClickListener(roomListViewListener);
 
-        ChatApplication app = (ChatApplication) this.getApplication();
-        mSocket = app.getSocket();
-        mSocket.on(S_GET_ROOMS, onGetRooms);
-        mSocket.on(S_JOIN_ROOM, onJoinRoom);
-        mSocket.connect();
-        mSocket.emit(S_GET_ROOMS, "");
+        if (mSocket == null) {
+            ChatApplication app = (ChatApplication) this.getApplication();
+            mSocket = app.getSocket();
+            mSocket.on(S_GET_ROOMS, onGetRooms);
+            mSocket.on(S_JOIN_ROOM, onJoinRoom);
+            mSocket.connect();
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -185,29 +188,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onPause () {
-        super.onPause();
-//        mSwipeRefreshLayout.setOnRefreshListener(null);
-//        mainsearchtitle.addTextChangedListener(null);
-//        mainsearchbtn.setOnClickListener(null);
-    }
-
-    @Override
-    public void onResume () {
+    public void onResume() {
         super.onResume();
-        Log.d("RESUME", "RESUME");
-
-//        ChatApplication app = (ChatApplication) this.getApplication();
-//        mSocket = app.getSocket();
-//
-//        mSocket.on(S_GET_ROOMS, onGetRooms);
-//        mSocket.on(S_JOIN_ROOM, onJoinRoom);
-//        mSocket.connect();
+        Log.d("onResume", S_GET_ROOMS);
         mSocket.emit(S_GET_ROOMS, "");
-
-        mSwipeRefreshLayout.setOnRefreshListener(swipeRefresh);
-        mainsearchtitle.addTextChangedListener(textWatcher);
-        mainsearchbtn.setOnClickListener(myListener);
     }
 
     SwipeRefreshLayout.OnRefreshListener swipeRefresh = new SwipeRefreshLayout.OnRefreshListener() {
@@ -220,18 +204,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     TextWatcher textWatcher = new TextWatcher() {
         String previousString = "";
+
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            previousString= charSequence.toString();
+            previousString = charSequence.toString();
         }
 
         @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        }
 
         @Override
         public void afterTextChanged(Editable editable) {
-            if (mainsearchtitle.getLineCount() >= 2)
-            {
+            if (mainsearchtitle.getLineCount() >= 2) {
                 mainsearchtitle.setText(previousString);
                 mainsearchtitle.setSelection(mainsearchtitle.length());
             }
@@ -243,23 +228,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void onClick(View view) {
             imm.hideSoftInputFromWindow(mainsearchtitle.getWindowToken(), 0);
             switch (view.getId()) {
-                case R.id.searchBtn :
+                case R.id.searchBtn:
                     String search_title = mainsearchtitle.getText().toString().trim();
                     String search_food = mainsearchfood.getSelectedItem().toString();
                     adapter.filter(search_title, search_food);
                     break;
 
-                case R.id.fab :
+                case R.id.fab:
                     animateFAB();
                     break;
 
-                case R.id.fab1 :
+                case R.id.fab1:
                     animateFAB();
                     CustomDialog customDialog = new CustomDialog(MainActivity.this);
                     customDialog.show();
                     break;
 
-                case R.id.fab2 :
+                case R.id.fab2:
                     animateFAB();
                     MatchDialog matchDialogDialog = new MatchDialog(MainActivity.this);
                     matchDialogDialog.show();
@@ -275,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             JSONObject data = new JSONObject();
             try {
                 data.put("room", room.id);
-                data.put("nickname", nickname);
+                data.put("nickname", UserInfo.getNickname());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -293,13 +278,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (resultData.getBoolean("result")) {
                     JSONObject data = new JSONObject();
                     data.put("room", resultData.getString("room"));
-                    data.put("nickname", nickname);
+                    data.put("nickname", UserInfo.getNickname());
                     mSocket.emit(S_USER_JOINED, data);
 
                     Intent intent = new Intent(MainActivity.this, RoomActivity.class);
                     intent.putExtra("room", resultData.getString("room"));
+                    intent.putExtra("title", resultData.getString("title"));
                     startActivity(intent);
+                } else {
+                    int reason = resultData.getInt("reason");
+                    final String message = (reason == NONEXISTENT) ? "This room doesn't exist anymore!" : "Sorry! This room is full.";
+                    if (reason == NONEXISTENT) mSocket.emit(S_GET_ROOMS, "");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -418,22 +415,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             titleview.setText(displayitems.get(position).title);
             foodview.setText(displayitems.get(position).food);
-            Log.d("lat1",String.valueOf(displayitems.get(position).lat));
-            Log.d("lng1",String.valueOf(displayitems.get(position).lng));
-            Log.d("lat2",String.valueOf(UserInfo.getLatv()));
-            Log.d("lng2",String.valueOf(UserInfo.getLngv()));
+            Log.d("lat1", String.valueOf(displayitems.get(position).lat));
+            Log.d("lng1", String.valueOf(displayitems.get(position).lng));
+            Log.d("lat2", String.valueOf(UserInfo.getLatv()));
+            Log.d("lng2", String.valueOf(UserInfo.getLngv()));
             double distance = getDistanceFromLatLonInm(displayitems.get(position).lat,
                     displayitems.get(position).lng,
                     UserInfo.getLatv(), UserInfo.getLngv());
-            if (distance > 1000000) distanceview.setText(String.valueOf(Math.round(distance/10000d)/100d)+"Mm");
-            else if (distance > 1000) distanceview.setText(String.valueOf(Math.round(distance/10d)/100d)+"km");
-            else distanceview.setText(String.valueOf(Math.round(distance))+"m");
-            String numbers = String.valueOf(displayitems.get(position).current_members)+" / "
-                    +String.valueOf(displayitems.get(position).max_members);
+            if (distance > 1000000)
+                distanceview.setText(String.valueOf(Math.round(distance / 10000d) / 100d) + "Mm");
+            else if (distance > 1000)
+                distanceview.setText(String.valueOf(Math.round(distance / 10d) / 100d) + "km");
+            else distanceview.setText(String.valueOf(Math.round(distance)) + "m");
+            String numbers = String.valueOf(displayitems.get(position).current_members) + " / "
+                    + String.valueOf(displayitems.get(position).max_members);
             numberview.setText(numbers);
 
             return v;
         }
+
     }
 
     @Override
@@ -465,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         askForPermissions();
         getMenuInflater().inflate(R.menu.main, menu);
         TextView nicknameText = (TextView) findViewById(R.id.nicknameHeader);
-        nicknameText.setText(nickname);
+        nicknameText.setText(UserInfo.getNickname());
 
         FragmentManager fragmentManager = getFragmentManager();
         MapFragment mapFragment = (MapFragment) fragmentManager
@@ -528,25 +528,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    double getDistanceFromLatLonInm(double lat1,double lon1,double lat2,double lon2) {
+    double getDistanceFromLatLonInm(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371; // Radius of the earth in km
-        double dLat = deg2rad(lat2-lat1);  // deg2rad below
-        double dLon = deg2rad(lon2-lon1);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
-                * Math.sin(dLon/2) * Math.sin(dLon/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double dLat = deg2rad(lat2 - lat1);  // deg2rad below
+        double dLon = deg2rad(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double d = R * c; // Distance in km
         Log.d("distanceis", String.valueOf(d));
-        return d*1000;
+        return d * 1000;
     }
 
     double deg2rad(double deg) {
-        return deg * (Math.PI/180);
+        return deg * (Math.PI / 180);
     }
 
-    public void animateFAB(){
+    public void animateFAB() {
 
-        if(isFabOpen){
+        if (isFabOpen) {
 
             fab.startAnimation(rotate_backward);
             fab1.startAnimation(fab_close);
@@ -564,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fab1.setClickable(true);
             fab2.setClickable(true);
             isFabOpen = true;
-            Log.d("Raj","open");
+            Log.d("Raj", "open");
 
         }
     }

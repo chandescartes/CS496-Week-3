@@ -104,7 +104,7 @@ public class StartActivity extends AppCompatActivity {
 
             UserInfo.setNickname(nickname);
 
-            Intent intent = new Intent(StartActivity.this, EditLocation.class);
+            Intent intent = new Intent(StartActivity.this, StartLocation.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }

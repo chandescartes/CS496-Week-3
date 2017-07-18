@@ -30,7 +30,9 @@ import io.socket.emitter.Emitter;
 
 public class RoomFragment extends Fragment {
 
-    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined", S_USER_LEFT = "user-left", S_USER_DISCONNECTED = "user-disconnected";
+    final String S_NEW_MESSAGE = "new-message", S_USER_JOINED = "user-joined",
+            S_USER_LEFT = "user-left", S_USER_DISCONNECTED = "user-disconnected",
+            S_SELF_JOINED	= "self-joined";
 
     String NICKNAME = UserInfo.getNickname();
     String ROOM = RoomActivity.ROOM;
@@ -68,6 +70,7 @@ public class RoomFragment extends Fragment {
         mSocket.on(S_NEW_MESSAGE, onNewMessage);
         mSocket.on(S_USER_JOINED, onUserJoined);
         mSocket.on(S_USER_LEFT, onUserLeft);
+        mSocket.on(S_SELF_JOINED, onSelfJoined);
         mSocket.connect();
     }
 
@@ -79,6 +82,14 @@ public class RoomFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        JSONObject data = new JSONObject();
+        try {
+            data.put("room", ROOM);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mSocket.emit(S_SELF_JOINED, data);
 
         mMessagesView = (RecyclerView) view.findViewById(R.id.messages);
         mMessagesView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -111,15 +122,6 @@ public class RoomFragment extends Fragment {
 
         JSONObject data = createData(new String[]{}, new String[]{});
         mSocket.emit(S_USER_DISCONNECTED, data);
-
-//        mSocket.disconnect();
-//        mSocket.off(Socket.EVENT_CONNECT, onConnect);
-//        mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-//        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-//        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-//        mSocket.off(S_NEW_MESSAGE, onNewMessage);
-//        mSocket.off(S_USER_JOINED, onUserJoined);
-//        mSocket.off(S_USER_LEFT, onUserLeft);
     }
 
     private void attemptSend() {
@@ -279,6 +281,32 @@ public class RoomFragment extends Fragment {
                     }
 
                     addLog(getResources().getString(R.string.message_user_joined, nickname));
+                    addParticipantsLog(numUsers);
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onSelfJoined = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            if (getActivity() == null) return;
+
+            Log.d("SELF JOINED", "HERE");
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    int numUsers;
+                    try {
+                        numUsers = data.getInt("numUsers");
+                    } catch (JSONException e) {
+                        Log.e("onUserJoined", e.getMessage());
+                        return;
+                    }
+
+                    addLog(getResources().getString(R.string.message_user_joined, "You"));
                     addParticipantsLog(numUsers);
                 }
             });

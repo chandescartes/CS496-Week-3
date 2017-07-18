@@ -16,6 +16,7 @@ import android.widget.Toast;
 public class RoomActivity extends AppCompatActivity {
 
     public static String ROOM;
+    public static String TITLE;
 
     boolean doubleBack = false;
 
@@ -23,11 +24,12 @@ public class RoomActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ROOM = getIntent().getStringExtra("room");
+        TITLE = getIntent().getStringExtra("title");
 
-//        ActionBar actionBar = getSupportActionBar();
-//        actionBar.setDisplayHomeAsUpEnabled(true);
-//        actionBar.setDisplayUseLogoEnabled(true);
-//        actionBar.setLogo(R.drawable.chickenleg);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle(TITLE);
 
         setContentView(R.layout.activity_room);
     }

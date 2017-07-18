@@ -9,26 +9,18 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -38,7 +30,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  * Created by q on 2017-07-14.
  */
 
-public class EditLocation extends AppCompatActivity implements OnMapReadyCallback {
+public class StartLocation extends AppCompatActivity implements OnMapReadyCallback {
 
     final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
@@ -109,10 +101,10 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
                 UserInfo.setLatv(lat);
                 UserInfo.setLngv(lng);
 
-//                Intent intent = new Intent(EditLocation.this, MainActivity.class);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                startActivity(intent);
-                finish();
+                Intent intent = new Intent(StartLocation.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+
             }
         });
 
@@ -168,7 +160,7 @@ public class EditLocation extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 //Prompt the user once explanation has been shown
-                                ActivityCompat.requestPermissions(EditLocation.this,
+                                ActivityCompat.requestPermissions(StartLocation.this,
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                         MY_PERMISSIONS_REQUEST_LOCATION);
                             }

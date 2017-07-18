@@ -71,9 +71,10 @@ public class EditNickname extends AppCompatActivity {
 
             UserInfo.setNickname(nickname);
 
-            Intent intent = new Intent(EditNickname.this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+//            Intent intent = new Intent(EditNickname.this, MainActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//            startActivity(intent);
+            finish();
         }
     };
 }

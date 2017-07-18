@@ -104,7 +104,7 @@ public class MatchDialog extends Dialog {
                     }
                 }
                 if (SelectedList.size() == 0) {
-                    Toast.makeText(mActivity, "선택하신 항목에 대한 방이 없습니다", Toast.LENGTH_SHORT);
+                    Toast.makeText(mActivity, "Sorry! No rooms match your food.", Toast.LENGTH_SHORT).show();
                     dismiss();
                     return;
                 }
