@@ -13,6 +13,7 @@ public class UserInfo {
     public static void setIdStr(String s) {
         id = s;
     }
+
     public static String getIdStr() {
         return id;
     }
@@ -20,6 +21,7 @@ public class UserInfo {
     public static void setNickname(String s) {
         nickname = s;
     }
+
     public static String getNickname() {
         return nickname;
     }
@@ -27,6 +29,7 @@ public class UserInfo {
     public static void setLatv(double d) {
         lat = d;
     }
+
     public static double getLatv() {
         return lat;
     }
@@ -34,6 +37,7 @@ public class UserInfo {
     public static void setLngv(double d) {
         lng = d;
     }
+
     public static double getLngv() {
         return lng;
     }

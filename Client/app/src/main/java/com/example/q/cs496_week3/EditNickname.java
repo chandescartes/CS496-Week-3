@@ -1,6 +1,5 @@
 package com.example.q.cs496_week3;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -10,9 +9,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Created by q on 2017-07-16.
@@ -65,15 +61,11 @@ public class EditNickname extends AppCompatActivity {
             }
 
             HttpCall.setMethodtext("userPUT");
-            HttpCall.setUrltext("/api/user/"+deviceId+"/nickname");
+            HttpCall.setUrltext("/api/user/" + deviceId + "/nickname");
             HttpCall.setNicknametext(nickname);
             HttpCall.getResponse();
 
             UserInfo.setNickname(nickname);
-
-//            Intent intent = new Intent(EditNickname.this, MainActivity.class);
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//            startActivity(intent);
             finish();
         }
     };

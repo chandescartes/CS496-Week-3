@@ -1,7 +1,6 @@
 package com.example.q.cs496_week3;
 
 import android.app.Application;
-import android.provider.SyncStateContract;
 
 import java.net.URISyntaxException;
 
@@ -12,6 +11,7 @@ public class ChatApplication extends Application {
 
     public String IPAddress = "http://52.79.200.191:4000/";
     private Socket mSocket;
+
     {
         try {
             mSocket = IO.socket(IPAddress);

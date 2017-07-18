@@ -3,11 +3,9 @@ package com.example.q.cs496_week3;
 import android.app.Activity;
 import android.util.Log;
 
-import java.io.File;
 import java.io.IOException;
 
 import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -20,7 +18,6 @@ import okhttp3.Response;
 public class HttpCall extends Activity {
     private static GetExample getexample = new GetExample();
     private static PostExample postexample = new PostExample();
-    //private static PutExample putexample = new PutExample();
     private static userPutExample userputexample = new userPutExample();
 
     private static String method;
@@ -90,35 +87,6 @@ public class HttpCall extends Activity {
         }
     }
 
-//    public static class PutExample {
-//        OkHttpClient client = new OkHttpClient();
-//
-//        String put(String url, File file, String name, String number) throws IOException {
-//            RequestBody formBody;
-//            if (file != null) {
-//                String filenameArray[] = file.getName().split("\\.");
-//                String ext = filenameArray[filenameArray.length - 1];
-//                formBody = new MultipartBody.Builder()
-//                        .setType(MultipartBody.FORM)
-//                        .addFormDataPart("name", name)
-//                        .addFormDataPart("number", number)
-//                        .addFormDataPart("profile_image", file.getName(), RequestBody.create(MediaType.parse("image/" + ext), file))
-//                        .build();
-//            } else {
-//                formBody = new MultipartBody.Builder()
-//                        .setType(MultipartBody.FORM)
-//                        .addFormDataPart("name", name)
-//                        .addFormDataPart("number", number)
-//                        .build();
-//            }
-//
-//            Request request = new Request.Builder().url(url).put(formBody).build();
-//            Response response = client.newCall(request).execute();
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//            return response.body().string();
-//        }
-//    }
-
     public static class userPutExample {
         public final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         OkHttpClient client = new OkHttpClient();
@@ -126,13 +94,10 @@ public class HttpCall extends Activity {
         String userput(String url, String nickname, String lat, String lng) throws IOException {
             RequestBody body = RequestBody.create(JSON, "");
 
-            Log.d("idstris", url);
-
-            if (url.equals("http://52.79.200.191:4000/api/user/"+UserInfo.getIdStr()+"/nickname")) {
+            if (url.equals("http://52.79.200.191:4000/api/user/" + UserInfo.getIdStr() + "/nickname")) {
                 body = RequestBody.create(JSON, "{\"nickname\":\"" + nickname + "\"}");
-                Log.d("NICKNAMEIS", nickname);
-            } else if (url.equals("http://52.79.200.191:4000/api/user/"+UserInfo.getIdStr()+"/location")) {
-                body = RequestBody.create(JSON, "{\"lat\":\""+lat+"\", \"lng\":\""+lng+"\"}");
+            } else if (url.equals("http://52.79.200.191:4000/api/user/" + UserInfo.getIdStr() + "/location")) {
+                body = RequestBody.create(JSON, "{\"lat\":\"" + lat + "\", \"lng\":\"" + lng + "\"}");
             }
 
             Request request = new Request.Builder().url(url).put(body).build();
@@ -143,8 +108,6 @@ public class HttpCall extends Activity {
     }
 
     public static String getResponse() {
-        Log.d("METHOD", method);
-        Log.d("URL", urltext);
         if (method.equals("GET")) {
             getexample = new GetExample();
             response = null;
@@ -200,23 +163,6 @@ public class HttpCall extends Activity {
         }
         return null;
     }
-
-//    public static class putThread extends Thread {
-//        static String response;
-//
-//        @Override
-//        public void run() {
-//            try {
-//                response = putexample.put("http://13.124.143.15:8080" + urltext, proimg, name, number);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        public String getResponse() {
-//            return response;
-//        }
-//    }
 
     public static class userputThread extends Thread {
         static String response;

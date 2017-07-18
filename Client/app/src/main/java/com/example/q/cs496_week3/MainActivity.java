@@ -8,45 +8,31 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.TypedArrayUtils;
-import android.support.v4.widget.ListViewAutoScrollHelper;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.util.Base64;
-
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -60,13 +46,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -191,15 +174,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume() {
         super.onResume();
-        Log.d("onResume", S_GET_ROOMS);
         mSocket.emit(S_GET_ROOMS, "");
     }
-
-//    @Override
-//    public void onStop() {
-//        super.onStop();
-//        mSocket.disconnect();
-//    }
 
     SwipeRefreshLayout.OnRefreshListener swipeRefresh = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
@@ -239,10 +215,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     String search_title = mainsearchtitle.getText().toString().trim();
                     String search_food = mainsearchfood.getSelectedItem().toString();
                     if (search_title == null) search_title = "";
-                    Log.d("RoomListSize2", String.valueOf(RoomArrList.size()));
                     adapter.filter(search_title, search_food);
                     RoomArrList = templist;
-                    Log.d("RoomListSize3", String.valueOf(RoomArrList.size()));
                     break;
 
                 case R.id.fab:
@@ -319,7 +293,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void call(Object... args) {
             JSONObject data = (JSONObject) args[0];
             Iterator<?> keys = data.keys();
-            Log.d("onGetRooms", data.toString());
 
             RoomArrList.clear();
 
@@ -357,7 +330,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private class CustomAdapter extends ArrayAdapter<Room> {
         public void filter(String searchText, String searchFood) {
             searchText = searchText.toLowerCase(Locale.getDefault());
-            Log.d("SearchOccurs", "here");
 
             templist = new ArrayList<>();
             templist.addAll(RoomArrList);
@@ -369,7 +341,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     if (item.title.contains(searchText)) {
                         if (item.food.equals(searchFood) || searchFood.equals("All"))
                             displayitems.add(item);
-                        Log.d("behavioris", "addone");
                     }
                 }
             }
@@ -381,7 +352,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             displayitems = objects;
             items = new ArrayList<>();
             items.addAll(displayitems);
-            Log.d("behavioris2", String.valueOf(displayitems.size()));
         }
 
         @Override
@@ -431,10 +401,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             titleview.setText(displayitems.get(position).title);
             foodview.setText(displayitems.get(position).food);
-            Log.d("lat1", String.valueOf(displayitems.get(position).lat));
-            Log.d("lng1", String.valueOf(displayitems.get(position).lng));
-            Log.d("lat2", String.valueOf(UserInfo.getLatv()));
-            Log.d("lng2", String.valueOf(UserInfo.getLngv()));
             double distance = getDistanceFromLatLonInm(displayitems.get(position).lat,
                     displayitems.get(position).lng,
                     UserInfo.getLatv(), UserInfo.getLngv());
@@ -477,7 +443,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         askForPermissions();
         getMenuInflater().inflate(R.menu.main, menu);
         TextView nicknameText = (TextView) findViewById(R.id.nicknameHeader);
@@ -507,7 +472,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.make_room) {
@@ -530,14 +494,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     double getDistanceFromLatLonInm(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // Radius of the earth in km
-        double dLat = deg2rad(lat2 - lat1);  // deg2rad below
+        double R = 6371;
+        double dLat = deg2rad(lat2 - lat1);
         double dLon = deg2rad(lon2 - lon1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double d = R * c; // Distance in km
-        Log.d("distanceis", String.valueOf(d));
+        double d = R * c;
         return d * 1000;
     }
 
@@ -555,7 +518,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fab1.setClickable(false);
             fab2.setClickable(false);
             isFabOpen = false;
-            Log.d("Raj", "close");
 
         } else {
 
@@ -565,13 +527,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fab1.setClickable(true);
             fab2.setClickable(true);
             isFabOpen = true;
-            Log.d("Raj", "open");
 
         }
     }
 
     public void askForPermissions() {
-        Log.d("permissioncheck", "AAAA");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

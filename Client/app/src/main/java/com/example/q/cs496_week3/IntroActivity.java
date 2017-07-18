@@ -3,7 +3,6 @@ package com.example.q.cs496_week3;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.transition.Fade;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
@@ -11,7 +10,6 @@ import android.widget.ImageView;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.hanks.htextview.fade.FadeTextView;
-import com.hanks.htextview.line.LineTextView;
 
 /**
  * Created by q on 2017-07-18.
@@ -27,11 +25,13 @@ public class IntroActivity extends AppCompatActivity {
         actionBar.hide();
 
         AnimateIntro();
-        FadeTextView a = (FadeTextView) findViewById(R.id.introtext);
+        FadeTextView b = (FadeTextView) findViewById(R.id.introtext1);
+        b.animateText(" Dine Together");
+        FadeTextView a = (FadeTextView) findViewById(R.id.introtext2);
         a.animateText(" TOGEDINE");
 
-        ImageView b = (ImageView) findViewById(R.id.introimg);
-        YoYo.with(Techniques.FadeIn).duration(1500).playOn(b);
+        ImageView c = (ImageView) findViewById(R.id.introimg);
+        YoYo.with(Techniques.FadeIn).duration(1500).playOn(c);
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {

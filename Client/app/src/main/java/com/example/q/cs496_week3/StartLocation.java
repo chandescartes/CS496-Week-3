@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -49,13 +48,16 @@ public class StartLocation extends AppCompatActivity implements OnMapReadyCallba
         }
 
         @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {}
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
 
         @Override
-        public void onProviderEnabled(String s) {}
+        public void onProviderEnabled(String s) {
+        }
 
         @Override
-        public void onProviderDisabled(String s) {}
+        public void onProviderDisabled(String s) {
+        }
     };
 
     @Override
@@ -93,7 +95,7 @@ public class StartLocation extends AppCompatActivity implements OnMapReadyCallba
                 double lng = selected_location.getPosition().longitude;
 
                 HttpCall.setMethodtext("userPUT");
-                HttpCall.setUrltext("/api/user/"+UserInfo.getIdStr()+"/location");
+                HttpCall.setUrltext("/api/user/" + UserInfo.getIdStr() + "/location");
                 HttpCall.setLatvalue(lat);
                 HttpCall.setLngvalue(lng);
                 HttpCall.getResponse();
@@ -129,37 +131,28 @@ public class StartLocation extends AppCompatActivity implements OnMapReadyCallba
         map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {
-                Log.d("Drag_STARTED", "--DRAGGING--");
             }
 
             @Override
             public void onMarkerDrag(Marker marker) {
-
             }
 
             @Override
             public void onMarkerDragEnd(Marker marker) {
-                Log.d("Drag_ENDED", String.valueOf(marker.getPosition().latitude));
             }
         });
         map.animateCamera(cameraUpdate);
     }
 
     public boolean checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission. ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission. ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.title_location_permission)
                         .setMessage(R.string.text_location_permission)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
                                 ActivityCompat.requestPermissions(StartLocation.this,
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                         MY_PERMISSIONS_REQUEST_LOCATION);
@@ -168,8 +161,7 @@ public class StartLocation extends AppCompatActivity implements OnMapReadyCallba
                         .create()
                         .show();
             } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission. ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
             }
             return false;
         } else {
