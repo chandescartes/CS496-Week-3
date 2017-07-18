@@ -195,6 +195,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mSocket.emit(S_GET_ROOMS, "");
     }
 
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        mSocket.disconnect();
+//    }
+
     SwipeRefreshLayout.OnRefreshListener swipeRefresh = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
@@ -217,8 +223,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         public void afterTextChanged(Editable s) {
-            if (mainsearchtitle.getLineCount() >= 2)
-            {
+            if (mainsearchtitle.getLineCount() >= 2) {
                 mainsearchtitle.setText(previousString);
                 mainsearchtitle.setSelection(mainsearchtitle.length());
             }
@@ -347,41 +352,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     };
 
-    private Emitter.Listener onGetRoomswithoutnotify = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            JSONObject data = (JSONObject) args[0];
-            Iterator<?> keys = data.keys();
-            Log.d("onGetRooms", data.toString());
-
-            RoomArrList.clear();
-
-            while (keys.hasNext()) {
-                Room room = new Room();
-                String key = (String) keys.next();
-                try {
-                    JSONObject item = (JSONObject) data.get(key);
-                    room.id = key;
-                    room.created_at = (String) item.get("created_at");
-                    room.title = (String) item.get("title");
-                    room.founder = (String) item.get("founder");
-                    room.food = (String) item.get("food");
-                    room.max_members = (Integer) item.get("limit");
-                    room.current_members = ((JSONObject) item.get("sockets")).length();
-                    room.lat = Double.parseDouble((String) item.get("lat"));
-                    room.lng = Double.parseDouble((String) item.get("long"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                RoomArrList.add(room);
-            }
-        }
-    };
-
     private class CustomAdapter extends ArrayAdapter<Room> {
         public void filter(String searchText, String searchFood) {
             searchText = searchText.toLowerCase(Locale.getDefault());
-            Log.d("SearchOccurs","here");
+            Log.d("SearchOccurs", "here");
 
             templist = new ArrayList<>();
             templist.addAll(RoomArrList);
@@ -526,18 +500,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

@@ -29,10 +29,6 @@ import java.util.Iterator;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-/**
- * Created by q on 2017-07-17.
- */
-
 public class MatchDialog extends Dialog {
 
     public final String S_GET_ROOMS = "get-rooms";
