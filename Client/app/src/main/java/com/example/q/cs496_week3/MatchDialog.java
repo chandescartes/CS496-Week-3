@@ -76,7 +76,6 @@ public class MatchDialog extends Dialog {
 
         setContentView(R.layout.match_dialog_layout);
         mSocket.on(S_GET_ROOMS, onGetRooms);
-        mSocket.on(S_JOIN_ROOM, onJoinRoom);
         mSocket.emit(S_GET_ROOMS, "");
 
         food = (Spinner) findViewById(R.id.txt_match_food);
@@ -145,28 +144,6 @@ public class MatchDialog extends Dialog {
                 RoomArrList.add(room);
             }
             Log.d("RoomArrList", RoomArrList.toString());
-        }
-    };
-
-    private Emitter.Listener onJoinRoom = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            JSONObject resultData = (JSONObject) args[0];
-
-            try {
-                if (resultData.getBoolean("result")) {
-                    JSONObject data = new JSONObject();
-                    data.put("room", resultData.getString("room"));
-                    data.put("nickname", UserInfo.getNickname());
-                    mSocket.emit(S_USER_JOINED, data);
-
-                    Intent intent = new Intent(mActivity, RoomActivity.class);
-                    intent.putExtra("room", resultData.getString("room"));
-                    mActivity.startActivity(intent);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
         }
     };
 
