@@ -16,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -26,6 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.socket.client.Socket;
+
+import static android.content.Context.INPUT_METHOD_SERVICE;
 
 public class CustomDialog extends Dialog {
 
@@ -67,6 +70,9 @@ public class CustomDialog extends Dialog {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
+                InputMethodManager imm;
+                imm = (InputMethodManager) mActivity.getSystemService(INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(title.getWindowToken(), 0);
                 Calendar c = Calendar.getInstance();
                 String created_at = String.valueOf(c.get(Calendar.MONTH))+String.valueOf(c.get(Calendar.DATE))+
                         String.valueOf(c.get(Calendar.HOUR_OF_DAY))+String.valueOf(c.get(Calendar.MINUTE))+

@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
@@ -45,11 +46,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -157,28 +158,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         rotate_backward = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backward);
         fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                animateFAB();
-            }
-        });
-        fab1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                animateFAB();
-                CustomDialog customDialog = new CustomDialog(MainActivity.this);
-                customDialog.show();
-            }
-        });
-        fab2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                animateFAB();
-                MatchDialog matchDialog = new MatchDialog(MainActivity.this);
-                matchDialog.show();
-            }
-        });
+        fab.setOnClickListener(myListener);
+        fab1.setOnClickListener(myListener);
+        fab2.setOnClickListener(myListener);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -199,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mainsearchfood = (Spinner) findViewById(R.id.search_room_main_food);
         mainsearchbtn = (ImageButton) findViewById(R.id.searchBtn);
         mainsearchtitle.addTextChangedListener(textWatcher);
-        mainsearchbtn.setOnClickListener(searchListener);
+        mainsearchbtn.setOnClickListener(myListener);
     }
 
     @Override
@@ -225,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mSwipeRefreshLayout.setOnRefreshListener(swipeRefresh);
         mainsearchtitle.addTextChangedListener(textWatcher);
-        mainsearchbtn.setOnClickListener(searchListener);
+        mainsearchbtn.setOnClickListener(myListener);
     }
 
     SwipeRefreshLayout.OnRefreshListener swipeRefresh = new SwipeRefreshLayout.OnRefreshListener() {
@@ -256,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     };
 
-    View.OnClickListener searchListener = new View.OnClickListener() {
+    View.OnClickListener myListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             imm.hideSoftInputFromWindow(mainsearchtitle.getWindowToken(), 0);
@@ -268,7 +250,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
 
                 case R.id.fab :
+                    animateFAB();
+                    break;
 
+                case R.id.fab1 :
+                    animateFAB();
+                    CustomDialog customDialog = new CustomDialog(MainActivity.this);
+                    customDialog.show();
+                    break;
+
+                case R.id.fab2 :
+                    animateFAB();
+                    MatchDialog matchDialogDialog = new MatchDialog(MainActivity.this);
+                    matchDialogDialog.show();
+                    break;
             }
         }
     };

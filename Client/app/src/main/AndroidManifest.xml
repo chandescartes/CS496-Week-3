@@ -34,12 +34,7 @@
 
         <activity
             android:name=".StartActivity"
-            android:noHistory="true"
             android:windowSoftInputMode="stateAlwaysHidden">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <activity
@@ -47,6 +42,15 @@
         </activity>
 
         <activity android:name=".RoomActivity">
+        </activity>
+
+        <activity
+            android:name=".IntroActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
     </application>
