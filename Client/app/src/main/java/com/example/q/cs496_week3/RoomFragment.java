@@ -1,5 +1,6 @@
 package com.example.q.cs496_week3;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -40,7 +41,8 @@ public class RoomFragment extends Fragment {
     private EditText mInputMessageView;
     private List<Message> mMessages = new ArrayList<Message>();
     private RecyclerView.Adapter mAdapter;
-    Socket mSocket;
+    Socket mSocket = MainActivity.mSocket;
+    Activity mActivity;
 
     public RoomFragment() {
         super();
@@ -50,6 +52,7 @@ public class RoomFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         mAdapter = new MessageAdapter(context, mMessages);
+        mActivity = getActivity();
     }
 
     @Override
@@ -259,6 +262,8 @@ public class RoomFragment extends Fragment {
     private Emitter.Listener onUserJoined = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
+            if (getActivity() == null) return;
+
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -283,6 +288,8 @@ public class RoomFragment extends Fragment {
     private Emitter.Listener onUserLeft = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
+            if (getActivity() == null) return;
+
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
