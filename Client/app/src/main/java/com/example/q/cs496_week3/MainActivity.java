@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     double lat;
     double lng;
 
-    Socket mSocket;
+    public static Socket mSocket;
     static Context context;
 
     ArrayList<Room> items;
@@ -205,9 +205,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onPause () {
         super.onPause();
-        mSwipeRefreshLayout.setOnRefreshListener(null);
-        mainsearchtitle.addTextChangedListener(null);
-        mainsearchbtn.setOnClickListener(null);
+//        mSwipeRefreshLayout.setOnRefreshListener(null);
+//        mainsearchtitle.addTextChangedListener(null);
+//        mainsearchbtn.setOnClickListener(null);
     }
 
     @Override
@@ -215,17 +215,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         Log.d("RESUME", "RESUME");
 
-        ChatApplication app = (ChatApplication) this.getApplication();
-        mSocket = app.getSocket();
-
-        mSocket.on(S_GET_ROOMS, onGetRooms);
-        mSocket.on(S_JOIN_ROOM, onJoinRoom);
-        mSocket.connect();
+//        ChatApplication app = (ChatApplication) this.getApplication();
+//        mSocket = app.getSocket();
+//
+//        mSocket.on(S_GET_ROOMS, onGetRooms);
+//        mSocket.on(S_JOIN_ROOM, onJoinRoom);
+//        mSocket.connect();
         mSocket.emit(S_GET_ROOMS, "");
 
-        mSwipeRefreshLayout.setOnRefreshListener(swipeRefresh);
-        mainsearchtitle.addTextChangedListener(textWatcher);
-        mainsearchbtn.setOnClickListener(searchListener);
+//        mSwipeRefreshLayout.setOnRefreshListener(swipeRefresh);
+//        mainsearchtitle.addTextChangedListener(textWatcher);
+//        mainsearchbtn.setOnClickListener(searchListener);
     }
 
     SwipeRefreshLayout.OnRefreshListener swipeRefresh = new SwipeRefreshLayout.OnRefreshListener() {
