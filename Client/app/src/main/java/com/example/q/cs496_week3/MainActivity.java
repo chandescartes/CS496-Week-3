@@ -63,6 +63,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ArrayList<Room> items;
     ArrayList<Room> RoomArrList = new ArrayList<>();
     ArrayList<Room> displayitems = new ArrayList<>();
+    ArrayList<Room> templist = new ArrayList<>();
 
     public class Room {
         String id;
@@ -136,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         lng = UserInfo.getLngv();
         roomListView = (ListView) findViewById(R.id.roomListView);
         adapter = new CustomAdapter(this, R.layout.room_row, RoomArrList);
-        adapter.filter("", "All");
         roomListView.setAdapter(adapter);
         roomListView.setOnItemClickListener(roomListViewListener);
 
@@ -229,12 +230,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
         @Override
-        public void afterTextChanged(Editable editable) {
+        public void afterTextChanged(Editable s) {
             if (mainsearchtitle.getLineCount() >= 2)
             {
                 mainsearchtitle.setText(previousString);
                 mainsearchtitle.setSelection(mainsearchtitle.length());
             }
+//            String search_text = s.toString();
+//            adapter.filter(search_text, "All");
         }
     };
 
@@ -246,7 +249,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 case R.id.searchBtn :
                     String search_title = mainsearchtitle.getText().toString().trim();
                     String search_food = mainsearchfood.getSelectedItem().toString();
+                    if (search_title == null) search_title = "";
+                    Log.d("RoomListSize2", String.valueOf(RoomArrList.size()));
                     adapter.filter(search_title, search_food);
+                    RoomArrList = templist;
+                    Log.d("RoomListSize3", String.valueOf(RoomArrList.size()));
                     break;
 
                 case R.id.fab :
@@ -334,9 +341,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 RoomArrList.add(room);
             }
-            Ascending ascending = new Ascending();
-            Collections.sort(RoomArrList, ascending);
-            Log.d("RoomArrList", RoomArrList.toString());
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -347,17 +351,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     };
 
+    private Emitter.Listener onGetRoomswithoutnotify = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Iterator<?> keys = data.keys();
+            Log.d("onGetRooms", data.toString());
+
+            RoomArrList.clear();
+
+            while (keys.hasNext()) {
+                Room room = new Room();
+                String key = (String) keys.next();
+                try {
+                    JSONObject item = (JSONObject) data.get(key);
+                    room.id = key;
+                    room.created_at = (String) item.get("created_at");
+                    room.title = (String) item.get("title");
+                    room.founder = (String) item.get("founder");
+                    room.food = (String) item.get("food");
+                    room.max_members = (Integer) item.get("limit");
+                    room.current_members = ((JSONObject) item.get("sockets")).length();
+                    room.lat = Double.parseDouble((String) item.get("lat"));
+                    room.lng = Double.parseDouble((String) item.get("long"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                RoomArrList.add(room);
+            }
+        }
+    };
+
     private class CustomAdapter extends ArrayAdapter<Room> {
         public void filter(String searchText, String searchFood) {
             searchText = searchText.toLowerCase(Locale.getDefault());
+            Log.d("SearchOccurs","here");
+
+            templist = new ArrayList<>();
+            templist.addAll(RoomArrList);
             displayitems.clear();
             if (searchText.length() == 0) {
-                displayitems.addAll(items);
+                displayitems.addAll(templist);
             } else {
-                for (Room item : items) {
+                for (Room item : templist) {
                     if (item.title.contains(searchText)) {
                         if (item.food.equals(searchFood) || searchFood.equals("All"))
                             displayitems.add(item);
+                        Log.d("behavioris", "addone");
                     }
                 }
             }
@@ -369,6 +409,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             displayitems = objects;
             items = new ArrayList<>();
             items.addAll(displayitems);
+            Log.d("behavioris2", String.valueOf(displayitems.size()));
         }
 
         @Override
@@ -496,9 +537,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
