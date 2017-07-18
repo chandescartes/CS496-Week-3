@@ -52,9 +52,7 @@ public class RoomActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (doubleBack) {
             super.onBackPressed();
-            Intent intent = new Intent(RoomActivity.this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+            return;
         }
 
         doubleBack = true;

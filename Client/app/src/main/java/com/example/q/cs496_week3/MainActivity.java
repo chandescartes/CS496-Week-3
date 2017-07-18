@@ -36,6 +36,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FloatingActionButton fab, fab1, fab2;
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
 
+    InputMethodManager imm;
     EditText mainsearchtitle;
     ImageButton mainsearchbtn;
     Spinner mainsearchfood;
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         nickname = UserInfo.getNickname();
         lat = UserInfo.getLatv();
         lng = UserInfo.getLngv();
@@ -172,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View view) {
                 animateFAB();
-                MatchDialog matchDialog = new MatchDialog(context);
+                MatchDialog matchDialog = new MatchDialog(MainActivity.this);
                 matchDialog.show();
             }
         });
@@ -256,10 +259,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     View.OnClickListener searchListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            String search_title = mainsearchtitle.getText().toString().trim();
-            String search_food = mainsearchfood.getSelectedItem().toString();
+            imm.hideSoftInputFromWindow(mainsearchtitle.getWindowToken(), 0);
+            switch (view.getId()) {
+                case R.id.searchBtn :
+                    String search_title = mainsearchtitle.getText().toString().trim();
+                    String search_food = mainsearchfood.getSelectedItem().toString();
+                    adapter.filter(search_title, search_food);
+                    break;
 
-            adapter.filter(search_title, search_food);
+                case R.id.fab :
+
+            }
         }
     };
 
@@ -329,6 +339,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 RoomArrList.add(room);
             }
+            Ascending ascending = new Ascending();
+            Collections.sort(RoomArrList, ascending);
             Log.d("RoomArrList", RoomArrList.toString());
 
             runOnUiThread(new Runnable() {
@@ -506,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             CustomDialog customDialog = new CustomDialog(MainActivity.this);
             customDialog.show();
         } else if (id == R.id.quick_match) {
-            MatchDialog matchDialog = new MatchDialog(context);
+            MatchDialog matchDialog = new MatchDialog(MainActivity.this);
             matchDialog.show();
         } else if (id == R.id.my_profile) {
             Intent intent = new Intent(MainActivity.this, EditNickname.class);
