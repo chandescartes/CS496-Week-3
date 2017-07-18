@@ -42,7 +42,7 @@ public class MatchDialog extends Dialog {
     ArrayList<Room> RoomArrList = new ArrayList<>();
     ArrayList<Room> SelectedList = new ArrayList<>();
     Activity mActivity;
-    Socket mSocket;
+    Socket mSocket = MainActivity.mSocket;
 
     public class Room {
         String id;
@@ -79,13 +79,8 @@ public class MatchDialog extends Dialog {
         getWindow().getAttributes().windowAnimations = R.style.PauseDialogAnimation;
 
         setContentView(R.layout.match_dialog_layout);
-
-        ChatApplication app = (ChatApplication) mActivity.getApplication();
-
-        mSocket = app.getSocket();
         mSocket.on(S_GET_ROOMS, onGetRooms);
         mSocket.on(S_JOIN_ROOM, onJoinRoom);
-        mSocket.connect();
         mSocket.emit(S_GET_ROOMS, "");
 
         food = (Spinner) findViewById(R.id.txt_match_food);
