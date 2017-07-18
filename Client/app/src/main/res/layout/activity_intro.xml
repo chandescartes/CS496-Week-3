@@ -18,7 +18,7 @@
         android:textStyle="bold"
         android:textColor="#FF5349"
         android:textSize="50dp"
-        app:animationDuration="2000"
+        app:animationDuration="2600"
         android:layout_marginBottom="30dp"/>
 
     <ImageView
